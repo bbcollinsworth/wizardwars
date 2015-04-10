@@ -1,0 +1,41 @@
+﻿Build started 4/10/2015 12:01:02 AM.
+     1>Project "C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\emptyExample.vcxproj" on node 2 (Build target(s)).
+     1>Project "C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\emptyExample.vcxproj" (1) is building "C:\Users\bcoll_000\Desktop\oFVisualStudio\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj" (2) on node 2 (GetTargetPath target(s)).
+       Project file contains ToolsVersion="12.0". This toolset may be unknown or missing, in which case you may be able to resolve this by installing the appropriate version of MSBuild, or the build may have been forced to a particular ToolsVersion for policy reasons. Treating the project as if it had ToolsVersion="4.0". For more information, please see http://go.microsoft.com/fwlink/?LinkId=291333.
+     2>Done Building Project "C:\Users\bcoll_000\Desktop\oFVisualStudio\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj" (GetTargetPath target(s)).
+     1>Project "C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\emptyExample.vcxproj" (1) is building "C:\Users\bcoll_000\Desktop\oFVisualStudio\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj" (2:2) on node 2 (GetNativeManifest target(s)).
+       Project file contains ToolsVersion="12.0". This toolset may be unknown or missing, in which case you may be able to resolve this by installing the appropriate version of MSBuild, or the build may have been forced to a particular ToolsVersion for policy reasons. Treating the project as if it had ToolsVersion="4.0". For more information, please see http://go.microsoft.com/fwlink/?LinkId=291333.
+     2>Done Building Project "C:\Users\bcoll_000\Desktop\oFVisualStudio\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj" (GetNativeManifest target(s)).
+     1>Project "C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\emptyExample.vcxproj" (1) is building "C:\Users\bcoll_000\Desktop\oFVisualStudio\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj" (2:3) on node 2 (GetResolvedLinkLibs target(s)).
+       Project file contains ToolsVersion="12.0". This toolset may be unknown or missing, in which case you may be able to resolve this by installing the appropriate version of MSBuild, or the build may have been forced to a particular ToolsVersion for policy reasons. Treating the project as if it had ToolsVersion="4.0". For more information, please see http://go.microsoft.com/fwlink/?LinkId=291333.
+     2>Done Building Project "C:\Users\bcoll_000\Desktop\oFVisualStudio\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj" (GetResolvedLinkLibs target(s)).
+     1>Link:
+         emptyExample.vcxproj -> C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\bin\KinectFireflies.exe
+     1>Project "C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\emptyExample.vcxproj" (1) is building "C:\Users\bcoll_000\Desktop\oFVisualStudio\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj" (2:4) on node 2 (GetCopyToOutputDirectoryItems target(s)).
+       Project file contains ToolsVersion="12.0". This toolset may be unknown or missing, in which case you may be able to resolve this by installing the appropriate version of MSBuild, or the build may have been forced to a particular ToolsVersion for policy reasons. Treating the project as if it had ToolsVersion="4.0". For more information, please see http://go.microsoft.com/fwlink/?LinkId=291333.
+     2>Done Building Project "C:\Users\bcoll_000\Desktop\oFVisualStudio\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj" (GetCopyToOutputDirectoryItems target(s)).
+     1>PostBuildEvent:
+         xcopy /e /i /y "C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\..\..\export\vs\*.dll" "C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\bin"
+         xcopy /e /i /y "C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\libs\KinectCommonBridge\lib\windows\*.dll" "C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\bin"
+         
+         :VCEnd
+         C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\..\..\export\vs\Assimp32.dll
+         C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\..\..\export\vs\fmodex.dll
+         C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\..\..\export\vs\fmodexL.dll
+         C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\..\..\export\vs\FreeImage.dll
+         C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\..\..\export\vs\FreeType-6.dll
+         C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\..\..\export\vs\glut32.dll
+         C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\..\..\export\vs\libeay32.dll
+         C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\..\..\export\vs\ssleay32.dll
+         C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\..\..\export\vs\Zlib.dll
+         9 File(s) copied
+         C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\libs\KinectCommonBridge\lib\windows\vs\KinectCommonBridge.dll
+         C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\libs\KinectCommonBridge\lib\windows\vs64\KinectCommonBridge.dll
+         C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\libs\KinectCommonBridge\lib\windows\vs64_Speech\KinectCommonBridge.dll
+         C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\..\libs\KinectCommonBridge\lib\windows\vs_Speech\KinectCommonBridge.dll
+         4 File(s) copied
+     1>Done Building Project "C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\example-Fireflies - ReleaseTest\emptyExample.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.38
