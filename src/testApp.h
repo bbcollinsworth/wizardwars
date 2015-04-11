@@ -11,6 +11,7 @@ class testApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
+		void setSpellPosition(ofVec3f *pos);
 		
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -26,6 +27,8 @@ class testApp : public ofBaseApp{
 		ofShader shader;
 		ofPlanePrimitive plane;
 
+		float xResolution, yResolution;
+
 		ofVec3f head, lHand, rHand, lWrist, rWrist, prevLHand, prevRHand;
 		bool hasSkeleton;
 
@@ -35,6 +38,10 @@ class testApp : public ofBaseApp{
 		ofxFloatSlider p1, p2, p3, p4, p5, p6;
 
 		ofVec3f lHandAdj, rHandAdj, lWristAdj, rWristAdj;
+		ofVec3f spellPos;
+
+		bool spellFired;
+		bool flameCalled, flameExists;
 
 		ofVec3f mousePos;
 		float motionEnergy;

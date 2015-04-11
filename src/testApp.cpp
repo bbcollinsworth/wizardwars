@@ -4,17 +4,35 @@
 
 void testApp::setup(){
 
+	ofSetFrameRate(60);
+
+	//==========================
+	//KINECT SETUP + INITIALIZATION
+	//==========================
+
 	kinect.initSensor( 0 );
 
-	kinect.initColorStream(640, 480);
-	kinect.initDepthStream(320, 240, true);
+	//kinect.initColorStream(640, 480);
+	//kinect.initDepthStream(320, 240, true); //could I just change this to 640,480?
+	kinect.initDepthStream(640, 480, true); //could I just change this to 640,480?
 	kinect.initSkeletonStream(true);
+	kinect.setDepthClipping(600.0F,1200.0F);
 
 	kinect.start();
 
+
+	//==========================
+	//GL + SHADER SETUP
+	//==========================
+
+	xResolution = 1024;
+	yResolution = 768;
+	//xResolution = 1280;
+	//yResolution = 720;
+
 #ifdef USE_PROGRAMMABLE_RENDERER
 	//shader.load("shaders/blobs.vs", "shaders/blobs.fs");
-	shader.load("shaders/blobs.vs", "shaders/blobs_fire_depth.fs");
+	shader.load("shaders/blobs.vs", "shaders/fire_clean.fs");
 	cout << "Shader in use is not gl2" << endl;
 #else
 	shader.load("shaders/blobs_gl2.vs", "shaders/blobs_gl2.fs");
@@ -26,13 +44,25 @@ void testApp::setup(){
 		ofLogNotice() << "Load Shader came back with GL error:	" << err;
 	}
 
-	plane.set(1024, 768, 4, 4);
+	plane.set(xResolution, yResolution, 4, 4);
 	plane.setPosition(0, 0, 0);
-	plane.mapTexCoords(0, 0, 1024, 768);
+	plane.mapTexCoords(0, 0, xResolution, yResolution);
+
+
+	//==========================
+	//BOOLEAN INITIALIZATIONS
+	//==========================
 
 	hasSkeleton = false;
 
 	firstPress = false;
+	flameCalled = false;
+	flameExists = false;
+
+	spellFired = false;
+
+	//=========================
+
 	lHandAdj = ofVec3f(plane.getWidth()*0.5,plane.getHeight()*0.5);
 	rHandAdj = ofVec3f(0,0,0);
 	lWristAdj = lHandAdj;
@@ -56,14 +86,14 @@ void testApp::update()
 {
 	kinect.update();
 
-	for (int i=0; i<flames.size(); i++){
-		if (flames[i]->pos.x > plane.getWidth()){
-			flames[i]->deleteSparks();
-			delete flames[i];
-			flames.erase(flames.begin()+i);
+	/*for (int i=0; i<flames.size(); i++){
+	if (flames[i]->pos.x > plane.getWidth()){
+	flames[i]->deleteSparks();
+	delete flames[i];
+	flames.erase(flames.begin()+i);
 
-		}
 	}
+	}*/
 
 	motionEnergy = 0;
 
@@ -106,17 +136,44 @@ void testApp::update()
 				//rHandPos = rHandBone.getScreenPosition();
 
 				//
-				lHandAdj = ofVec3f(lHand.x*plane.getWidth()/640,lHand.y*plane.getHeight()/480);
+				/*lHandAdj = ofVec3f(lHand.x*plane.getWidth()/640,lHand.y*plane.getHeight()/480);
 				rHandAdj = ofVec3f(rHand.x*plane.getWidth()/640,rHand.y*plane.getHeight()/480);
 				lWristAdj = ofVec3f(lWrist.x*plane.getWidth()/640,lWrist.y*plane.getHeight()/480);
 				cout << "Left Wrist: " << lWristAdj << endl;
 				rWristAdj = ofVec3f(rWrist.x*plane.getWidth()/640,rWrist.y*plane.getHeight()/480);
-				cout << "Right Wrist: " << rWristAdj << endl;
+				cout << "Right Wrist: " << rWristAdj << endl;*/
 
 
 				//----SPELL POSITION HERE:-----
 
 				//ofVec3f spellPos = ofVec3f(lHandAdj + (rHandAdj-lHandAdj)*0.5);
+
+				//for feeding to shader:
+
+				//=====SET A TIME GATE ON NEW FLAME???====//
+				if (spellFired){
+					spellPos.x *= 1.2;
+				} else {
+					spellPos = ofVec3f(lHand + (rHand-lHand)*0.5);
+					cout << rHand.x << endl;
+				}
+
+				if (spellPos.x > 640) {
+					flameExists = false;
+					spellFired = false;
+					motion.clear();
+				}
+
+
+				//---Put these in sep. function with pointer to hand positions?)
+				if (rHand.x - lHand.x < -20 && abs(rHand.y-lHand.y) < 20 && !flameCalled) { //&& !flameExists 
+					flameCalled = true;
+				}
+
+				if (flameCalled && !flameExists && rHand.x - lHand.x > 5) {
+					flameExists = true;
+					flameCalled = false;
+				}
 
 				//cout << flamePos << endl;
 
@@ -141,7 +198,7 @@ void testApp::update()
 				float lDistMoved = lHand.squareDistance(prevLHand);
 				float rDistMoved = rHand.squareDistance(prevRHand);
 				float totalMoved = rDistMoved*0.1 + lDistMoved*0.1;
-					totalMoved = ofClamp(totalMoved,0,50);
+				totalMoved = ofClamp(totalMoved,0,50);
 
 				if (lDistMoved > 100 || rDistMoved > 100){
 					motion.push_back(totalMoved);
@@ -182,13 +239,18 @@ void testApp::update()
 
 				//ofVec3f wristSpacingVec = lHandAdj-rHandAdj;
 				//float handSpacing = handSpacingVec.length();
-				float handSpacing = lWristAdj.distance(rWristAdj);
-				
+
+				//------NEED TO REACTIVATE HAND SPACING FOR THIS??
+				float handSpacing = lWrist.distance(rWrist);
+
 				//cout << "Hand Spacing: " << handSpacing << endl;
 				//cout << "Max Spacing: " << plane.getHeight()*0.1 << endl;
 				//if (handSpacing < plane.getHeight()*0.1 && lHandAdj.x > plane.getWidth()*0.7){
 
-				if (handSpacing < plane.getHeight()*0.1 && lHandAdj.x > lWristAdj.x && rHandAdj.x > rWristAdj.x){
+				//if (handSpacing < plane.getHeight()*0.1 && lHandAdj.x > lWristAdj.x && rHandAdj.x > rWristAdj.x){
+				
+				if (handSpacing < plane.getHeight()*0.1 && lHand.x > lWrist.x && rHand.x > rWrist.x && abs(lWrist.y - rWrist.y) < 50 && flameExists){
+					spellFired = true;
 					//for (int i=0; i<flames.size(); i++){
 					//	flames[i]->launch();
 					//}
@@ -212,11 +274,12 @@ void testApp::draw(){
 	ofDisableAlphaBlending();
 
 	ofPushMatrix();
-	ofTranslate(512, 768/2);
+	//ofTranslate(512, 768/2);
+	ofTranslate(xResolution*0.5, yResolution*0.5);
 
 	shader.begin();
 	shader.setUniform1f("time", ofGetElapsedTimef());///2.0);
-	shader.setUniform2f("resolution", 1024, 768);
+	shader.setUniform2f("resolution", xResolution, yResolution);
 	shader.setUniformTexture("videoTex", kinect.getColorTexture(), 0);
 	//shader.setUniformTexture("videoTex", kinect.getDepthTexture(), 0);
 
@@ -228,16 +291,25 @@ void testApp::draw(){
 		//shader.setUniform3f("lHandPoint", 1.0 + (lHand.x/-320.0), 1.0 + (lHand.y/-240.0), 0);
 		//shader.setUniform3f("lHandPoint", 1.0 + (lHand.x/-320.0), 1.0 + (lHand.y/-240.0), 0);
 		//shader.setUniform3f("rHandPoint", 1.0 + (rHand.x/-320.0), 1.0 + (rHand.y/-240.0), 0);
-		shader.setUniform3f("lHandPoint", 1.0 + (lHand.x/-320.0), 1.0 + (lHand.y/-240.0), 0);
-		cout << 1.0 + (lHand.x/-320.0) << " , " << 1.0 + (lHand.y/-240.0) << endl;
 
-		shader.setUniform3f("rHandPoint", 1.0 + (rHand.x/-320.0), 1.0 + (rHand.y/-240.0), 0);
+		//shader.setUniform3f("lHandPoint", 1.0 + (lHand.x/-320.0), 1.0 + (lHand.y/-240.0), 0);
+		//cout << 1.0 + (lHand.x/-320.0) << " , " << 1.0 + (lHand.y/-240.0) << endl;
+
+		//shader.setUniform3f("rHandPoint", 1.0 + (rHand.x/-320.0), 1.0 + (rHand.y/-240.0), 0);
+
+		shader.setUniform3f("spellPoint", 1.0 + (spellPos.x/-320.0), 1.0 + (spellPos.y/-240.0), 0);
+
 		//shader.setUniform1f("frequency", p4);
 		//shader.setUniform1f("scalar", p5);
 		//shader.setUniform1f("blobDensity", jointDistance/600.0);
 		//shader.setUniform1f("blobDensity", 2.0);
 
 		//float flameIntense = ofMap(motionEnergy,0,10000,0.5,0.01,true);
+		if (flameExists){
+			shader.setUniform1i("flame", 1);
+		}else {
+			shader.setUniform1i("flame", 0);
+		}
 		float flameIntense = ofMap(motionEnergy,0,6000,0.0,1.0,true);
 
 		shader.setUniform1f("intensity", flameIntense);
@@ -245,8 +317,9 @@ void testApp::draw(){
 	} else {
 
 		//shader.setUniform3f("headPoint", p1, p1, p1);
-		shader.setUniform3f("lHandPoint", p2, p2, p2);
-		shader.setUniform3f("rHandPoint", p3, p3, p3);
+		//shader.setUniform3f("lHandPoint", p2, p2, p2);
+		//shader.setUniform3f("rHandPoint", p3, p3, p3);
+		shader.setUniform3f("spellPoint", p3, p3, p3);
 		/*shader.setUniform1f("frequency", p4);
 		shader.setUniform1f("scalar", p5);
 		shader.setUniform1f("blobDensity", p6);*/
@@ -274,16 +347,21 @@ void testApp::draw(){
 }
 
 //--------------------------------------------------------------
+void testApp::setSpellPosition(ofVec3f *pos){
+
+}
+
+//--------------------------------------------------------------
 void testApp::keyPressed(int key){
 	if (key == 'f'){
 		ofToggleFullscreen();
 	}
 
 	if (key == 's'){
-        string frameCount = ofToString(20000+ofGetFrameNum());
-        string fileName = "Images/" + frameCount + ".jpg";
-        ofSaveScreen(fileName);
-    }
+		string frameCount = ofToString(20000+ofGetFrameNum());
+		string fileName = "Images/" + frameCount + ".jpg";
+		ofSaveScreen(fileName);
+	}
 }
 
 //--------------------------------------------------------------

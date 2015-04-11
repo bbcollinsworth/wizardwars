@@ -15,8 +15,13 @@ out vec4 fragColor;
 uniform float intensity;
 
 //uniform vec3 headPoint;
-uniform vec3 rHandPoint;
-uniform vec3 lHandPoint;
+//uniform vec3 rHandPoint;
+//uniform vec3 lHandPoint;
+uniform vec3 spellPoint;
+
+uniform bool flame;
+
+//uniform vec2 res;
 
 uniform sampler2DRect videoTex;
 
@@ -72,19 +77,52 @@ void main( void ) {
 
    vec2 tp = (texCoordVarying.xy/resolution.x) * 2.0 - vec2(1.0,resolution.y/resolution.x);
 
+  vec2 videoScaling = vec2(640.0/resolution.x, 480.0/resolution.y);
+   //vec2 videoScaling = vec2(640.0/1024.0, 480.0/768.0);
+
+   vec4 vidColor = vec4(texture(videoTex, texCoordVarying.xy * videoScaling).rgb, 1.0);
+   //vec4 depthColor = vec4(texture(depthTex, texCoordVarying.xy * videoScaling).rgb, 1.0);
+
+   //if color stream, make grayScale
+   //float grayComp = (vidColor.r + vidColor.g + vidColor.b) / 3.0;
+   //vec4 vidGray = vec4(grayComp, grayComp, grayComp, 1.0);
+
+   /*
+   vec4 vidGray = vidColor;
+   vidGray.rgb = 1.0-vidColor.rgb;
+   //if ((vidGray.r+vidGray.g+vidGray.b)/3 > 0.9){
+    float threshold = 0.85;
+    if (vidGray.b > threshold){
+    vidGray.rgb = 1.0-vidGray.rgb;
+   }
+
+   vidGray.rg -=0.2;
+   vidGray*=1./threshold;
+   vidGray = clamp(vidGray,0.,1.);
+   //this inverts
+   //vidGray.rgb = 1.0-vidGray.rgb;
+  */
+
+   //float depthGray = ()
+   //vec4 vidGray = vec4((texture2DRect(videoTex, gl_TexCoord[0].xy * videoScaling).r+texture2DRect(videoTex, gl_TexCoord[0].xy * videoScaling).g+texture2DRect(videoTex, gl_TexCoord[0].xy * videoScaling).b)*0.333, 1.0);
+
    //vec2 hp=tp+headPoint.xy;
 
    //vec2 lp=tp+lHandPoint.xy;
-   vec2 lp=lHandPoint.xy*(2-intensity*1.5);
-   vec2 rp=rHandPoint.xy*(2-intensity*1.5);
-   lp.y +=0.15;
-   rp.y +=0.15;
-   lp /= 2.;
-   rp /= 2.;
+   // vec2 lp=lHandPoint.xy*(2-intensity*1.5);
+   // vec2 rp=rHandPoint.xy*(2-intensity*1.5);
+
+   // lp.y +=0.15;
+   // rp.y +=0.15;
+   // lp /= 2.;
+   // rp /= 2.;
+
+   vec2 sp=spellPoint.xy*(2-intensity*1.5);
+   sp.y += 0.15;
    //vec2 rp=tp+rHandPoint.xy;
 
    //lp;
-
+if (flame) {
   // vec2 uv = fragCoord.xy / iResolution.xy;
   vec2 uv = -tp;
   vec2 q = uv;//uv;
@@ -97,8 +135,9 @@ void main( void ) {
     
   //this controls xposition of frame - relative to multiplier above
   //q.x -= 2.5;//q.x = mod(q.x,1.)-0.5;
-  q -= lp;
-  q -= rp;
+  //q -= lp;
+  //q -= rp;
+  q -= sp;
    
     //this controls y position
   //q.y -= 1.5;
@@ -129,22 +168,8 @@ void main( void ) {
 
    float interp = (flameColor.x + flameColor.y + flameColor.z)/3.0;
 
-   vec2 videoScaling = vec2(640.0/1024.0, 480.0/768.0);
-
-   vec4 vidColor = vec4(texture(videoTex, texCoordVarying.xy * videoScaling).rgb, 1.0);
-   //vec4 depthColor = vec4(texture(depthTex, texCoordVarying.xy * videoScaling).rgb, 1.0);
-
-   //make grayScale
-   float grayComp = (vidColor.r + vidColor.g + vidColor.b) / 3.0;
-   vec4 vidGray = vec4(grayComp, grayComp, grayComp, 1.0);
-
-   //this inverts
-   vidGray.rgb = 1.0-vidGray.rgb;
-
-
-   //float depthGray = ()
-   //vec4 vidGray = vec4((texture2DRect(videoTex, gl_TexCoord[0].xy * videoScaling).r+texture2DRect(videoTex, gl_TexCoord[0].xy * videoScaling).g+texture2DRect(videoTex, gl_TexCoord[0].xy * videoScaling).b)*0.333, 1.0);
-
+}
+  
    vec4 mixedColor = mix(vidColor, flameColor, interp);
 
    fragColor = mixedColor;
