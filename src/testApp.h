@@ -40,11 +40,14 @@ class testApp : public ofBaseApp{
 		ofVec3f lHandAdj, rHandAdj, lWristAdj, rWristAdj;
 		ofVec3f spellPos;
 
+		//spell creation logic
 		bool spellFired;
-		bool flameCalled, flameExists;
+		bool spellCalled, spellExists, newFireCanBeCalled;
+		float spellCreateDelay;
 
 		ofVec3f mousePos;
 		float motionEnergy;
+		float spellIntensity;
 
 		bool firstPress;
 
@@ -52,5 +55,10 @@ class testApp : public ofBaseApp{
 
 		//vector <float *> motion;
 		vector <float> motion;
+
+		ofSoundPlayer fCrackle;
+		ofSoundPlayer fWhoosh;
+
+		bool playSound;
 
 };

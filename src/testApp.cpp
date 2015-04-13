@@ -56,12 +56,27 @@ void testApp::setup(){
 	hasSkeleton = false;
 
 	firstPress = false;
-	flameCalled = false;
-	flameExists = false;
+	spellCalled = false;
+	spellExists = false;
+	newFireCanBeCalled = true;
 
 	spellFired = false;
 
+	playSound = false;
+
 	//=========================
+	//SOUND SETUP
+	//==========================
+
+	fWhoosh.loadSound("sounds/fire_whoosh.wav");
+	fWhoosh.setVolume(0.75);
+	fWhoosh.setMultiPlay(true);
+
+	fCrackle.loadSound("sounds/fire_crackle.wav");
+	fCrackle.setVolume(0.2);
+	fCrackle.setMultiPlay(true);
+
+	//==========================
 
 	lHandAdj = ofVec3f(plane.getWidth()*0.5,plane.getHeight()*0.5);
 	rHandAdj = ofVec3f(0,0,0);
@@ -86,6 +101,8 @@ void testApp::update()
 {
 	kinect.update();
 
+
+
 	/*for (int i=0; i<flames.size(); i++){
 	if (flames[i]->pos.x > plane.getWidth()){
 	flames[i]->deleteSparks();
@@ -95,13 +112,34 @@ void testApp::update()
 	}
 	}*/
 
-	motionEnergy = 0;
+	//motionEnergy = 0;
+
+
+
+
+	//should access PLAYER 1 [ kinect.getSkeletons().size() - 1 ]
+	// PLAYER 2 [ kinect.getSkeletons().size() - 2 ]
+	if(kinect.isNewSkeleton()) {
+
+		motionEnergy*= 0.99;
+	} else {
+		motionEnergy = 0;
+	}
 
 	if(kinect.isNewSkeleton()) {
+
+
+
 		for( int i = 0; i < kinect.getSkeletons().size(); i++) 
 		{
 
+			/*int i = kinect.getSkeletons().size();
+			cout << "skeletons: " << i << endl;
+			i -= 1;*/
+
+			//if(kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD) != kinect.getSkeletons().at(i).end())
 			if(kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD) != kinect.getSkeletons().at(i).end())
+
 			{
 
 				// just get the first one
@@ -150,29 +188,117 @@ void testApp::update()
 
 				//for feeding to shader:
 
-				//=====SET A TIME GATE ON NEW FLAME???====//
-				if (spellFired){
-					spellPos.x *= 1.2;
-				} else {
-					spellPos = ofVec3f(lHand + (rHand-lHand)*0.5);
-					cout << rHand.x << endl;
+
+				float lDistMoved = lHand.squareDistance(prevLHand);
+				float rDistMoved = rHand.squareDistance(prevRHand);
+				float totalMoved = rDistMoved*0.1 + lDistMoved*0.1;
+				totalMoved = ofClamp(totalMoved,0,50);
+
+
+				//----ALTERNATIVE MOTION ENERGY APPROACH
+				if (lDistMoved > 100 || rDistMoved > 100){
+					motionEnergy += totalMoved;
 				}
 
+				if (lDistMoved > 100 || rDistMoved > 100){
+					motion.push_back(totalMoved);
+				}
+
+				if (motion.size() > 120) {
+					//delete motion[motion.size()-1];
+					motion.erase(motion.begin());
+				} 
+				else if (motion.size() > 1 && totalMoved < 10) {
+					motion.erase(motion.begin());
+				}
+
+				spellIntensity = ofMap(motionEnergy,0,6000,0.0,1.0,true);
+
+
+
+				//for (auto & move : motion) {
+				//	motionEnergy += move;
+				//}
+
+				cout << "Motion Energy: " << motionEnergy << endl;
+
+				//=====SET A TIME GATE ON NEW FLAME???====//
+
+				//------NEED TO REACTIVATE HAND SPACING FOR THIS??
+				float handSpacing = lWrist.distance(rWrist);
+
+				//cout << "Hand Spacing: " << handSpacing << endl;
+				//cout << "Max Spacing: " << plane.getHeight()*0.1 << endl;
+				//if (handSpacing < plane.getHeight()*0.1 && lHandAdj.x > plane.getWidth()*0.7){
+
+				//if (handSpacing < plane.getHeight()*0.1 && lHandAdj.x > lWristAdj.x && rHandAdj.x > rWristAdj.x){
+
+				if (lHand.x < rHand.x && !spellExists && !spellCalled) {
+
+					newFireCanBeCalled = true;
+				}
+
+
+				if (handSpacing < plane.getHeight()*0.1 && lHand.x > lWrist.x && rHand.x > rWrist.x && abs(lWrist.y - rWrist.y) < 50 && spellExists){
+
+					//if (ofGetElapsedTimeMillis() > spellCreateTime + 
+					spellFired = true;
+					fCrackle.stop();
+					playSound = true;
+					//playSound(fire);
+
+					//for (int i=0; i<flames.size(); i++){
+					//	flames[i]->launch();
+					//}
+				}
+
+				if (playSound){
+					fWhoosh.setVolume(ofMap(spellIntensity,0.0,1.0,0.5,1.0));
+					fWhoosh.setSpeed(ofMap(spellIntensity,0.0,1.0,1.0,0.5));
+					fWhoosh.play();
+					playSound = false;
+				}
+
+
+
 				if (spellPos.x > 640) {
-					flameExists = false;
+					spellExists = false;
 					spellFired = false;
 					motion.clear();
 				}
 
 
+
 				//---Put these in sep. function with pointer to hand positions?)
-				if (rHand.x - lHand.x < -20 && abs(rHand.y-lHand.y) < 20 && !flameCalled) { //&& !flameExists 
-					flameCalled = true;
+				cout << "Angle between hands: " << ofVec3f(1,0,0).angle(lHand - rHand) << " DEGREES" << endl;
+				if (rHand.x - lHand.x < 0 && prevRHand.x - prevLHand.x > 0 && abs(rHand.y-lHand.y) < 50 && !spellCalled && !spellExists && newFireCanBeCalled) { //&& !flameExists  //abs(rHand.y-lHand.y)
+					spellFired = false;
+					spellCalled = true;
+					//spellCreateDelay = ofGetElapsedTimef() +0.3;
+					motionEnergy = 0;
+
 				}
 
-				if (flameCalled && !flameExists && rHand.x - lHand.x > 5) {
-					flameExists = true;
-					flameCalled = false;
+				if (spellCalled && !spellExists){
+					spellFired = false;
+					if (rHand.x - lHand.x > 5) {
+						spellExists = true;
+						fWhoosh.play();
+						fCrackle.play();
+						//fWhoosh.setSpeed( 0.1f );
+						//fWhoosh.setPan(ofMap(x, 0, widthStep, -1, 1, true));
+						spellCalled = false;
+
+					}
+				}
+
+				if (fCrackle.getIsPlaying()){
+					fCrackle.setVolume(ofMap(spellIntensity,0.0,1.0,0.2,1.0));
+					fCrackle.setSpeed(ofMap(spellIntensity,0.0,1.0,1.0,0.5));
+				}
+
+				if (spellExists){
+					newFireCanBeCalled = false;
 				}
 
 				//cout << flamePos << endl;
@@ -195,33 +321,7 @@ void testApp::update()
 
 				hasSkeleton = true;
 
-				float lDistMoved = lHand.squareDistance(prevLHand);
-				float rDistMoved = rHand.squareDistance(prevRHand);
-				float totalMoved = rDistMoved*0.1 + lDistMoved*0.1;
-				totalMoved = ofClamp(totalMoved,0,50);
-
-				if (lDistMoved > 100 || rDistMoved > 100){
-					motion.push_back(totalMoved);
-				}
-
-				if (motion.size() > 120) {
-					//delete motion[motion.size()-1];
-					motion.erase(motion.begin());
-				} 
-				else if (motion.size() > 1 && totalMoved < 10) {
-					motion.erase(motion.begin());
-				}
-
-
-				/*for (int i = 0; i < motion.size(); i++){
-				motionEnergy += motion[i];
-				}*/
-
-				for (auto & move : motion) {
-					motionEnergy += move;
-				}
-
-				//cout << motionEnergy << endl;
+				
 
 				for (int i=0; i<flames.size(); i++){
 					/*ofVec3f clearForce = ofVec3f(0,0);
@@ -240,20 +340,13 @@ void testApp::update()
 				//ofVec3f wristSpacingVec = lHandAdj-rHandAdj;
 				//float handSpacing = handSpacingVec.length();
 
-				//------NEED TO REACTIVATE HAND SPACING FOR THIS??
-				float handSpacing = lWrist.distance(rWrist);
-
-				//cout << "Hand Spacing: " << handSpacing << endl;
-				//cout << "Max Spacing: " << plane.getHeight()*0.1 << endl;
-				//if (handSpacing < plane.getHeight()*0.1 && lHandAdj.x > plane.getWidth()*0.7){
-
-				//if (handSpacing < plane.getHeight()*0.1 && lHandAdj.x > lWristAdj.x && rHandAdj.x > rWristAdj.x){
-				
-				if (handSpacing < plane.getHeight()*0.1 && lHand.x > lWrist.x && rHand.x > rWrist.x && abs(lWrist.y - rWrist.y) < 50 && flameExists){
-					spellFired = true;
-					//for (int i=0; i<flames.size(); i++){
-					//	flames[i]->launch();
-					//}
+				if (spellExists){
+					if (spellFired){
+						spellPos.x *= 1.2;
+					} else {
+						spellPos = ofVec3f(lHand + (rHand-lHand)*0.5);
+						//cout << rHand.x << endl;
+					}
 				}
 
 				prevLHand = lHand;
@@ -264,6 +357,8 @@ void testApp::update()
 			}
 		}
 	}
+
+	ofSoundUpdate();
 
 
 }
@@ -305,14 +400,16 @@ void testApp::draw(){
 		//shader.setUniform1f("blobDensity", 2.0);
 
 		//float flameIntense = ofMap(motionEnergy,0,10000,0.5,0.01,true);
-		if (flameExists){
+		if (spellExists){
+			//if (spellType == "flame"){
 			shader.setUniform1i("flame", 1);
 		}else {
 			shader.setUniform1i("flame", 0);
 		}
-		float flameIntense = ofMap(motionEnergy,0,6000,0.0,1.0,true);
+		//}
 
-		shader.setUniform1f("intensity", flameIntense);
+
+		shader.setUniform1f("intensity", spellIntensity);
 
 	} else {
 
@@ -338,6 +435,18 @@ void testApp::draw(){
 		//flames[i]->draw();
 	}
 	ofPopStyle();
+
+	if(hasSkeleton)
+	{
+		ofSetColor(255,0,0);
+		ofSetLineWidth(5);
+		ofLine(lHand,rHand);
+
+		ofSetColor(255,255,100);
+		ofDrawBitmapString("SKELETON DETECTED", ofGetWidth()*0.5, 32);
+
+	}
+
 
 	if(!hasSkeleton) 
 	{
