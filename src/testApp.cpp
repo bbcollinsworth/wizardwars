@@ -16,7 +16,7 @@ void testApp::setup(){
 	//kinect.initDepthStream(320, 240, true); //could I just change this to 640,480?
 	kinect.initDepthStream(640, 480, true); //could I just change this to 640,480?
 	kinect.initSkeletonStream(true);
-	kinect.setDepthClipping(600.0F,1200.0F);
+	kinect.setDepthClipping(1000.0F,1500.0F);
 
 	kinect.start();
 
@@ -25,10 +25,14 @@ void testApp::setup(){
 	//GL + SHADER SETUP
 	//==========================
 
-	xResolution = 1024;
-	yResolution = 768;
-	//xResolution = 1280;
-	//yResolution = 720;
+	//xResolution = 1024;
+	//yResolution = 768;
+	xResolution = 1500;
+	yResolution = 480*xResolution/640;
+	//xResolution = 1600;
+	//yResolution = 480*xResolution/640;
+
+	//ofToggleFullscreen();
 
 #ifdef USE_PROGRAMMABLE_RENDERER
 	//shader.load("shaders/blobs.vs", "shaders/blobs.fs");
@@ -55,26 +59,32 @@ void testApp::setup(){
 
 	hasSkeleton = false;
 
-	firstPress = false;
+	/*firstPress = false;
 	spellCalled = false;
 	spellExists = false;
 	newFireCanBeCalled = true;
 
 	spellFired = false;
+	spellCanBeFired = false;*/
 
 	playSound = false;
+
+	player1Exists = false;
+	player2Exists = false;
+	p1Updated = false;
+	p2Updated = false;
 
 	//=========================
 	//SOUND SETUP
 	//==========================
 
-	fWhoosh.loadSound("sounds/fire_whoosh.wav");
+	/*fWhoosh.loadSound("sounds/fire_whoosh.wav");
 	fWhoosh.setVolume(0.75);
 	fWhoosh.setMultiPlay(true);
 
 	fCrackle.loadSound("sounds/fire_crackle.wav");
 	fCrackle.setVolume(0.2);
-	fCrackle.setMultiPlay(true);
+	fCrackle.setMultiPlay(true);*/
 
 	//==========================
 
@@ -102,33 +112,19 @@ void testApp::update()
 	kinect.update();
 
 
-
-	/*for (int i=0; i<flames.size(); i++){
-	if (flames[i]->pos.x > plane.getWidth()){
-	flames[i]->deleteSparks();
-	delete flames[i];
-	flames.erase(flames.begin()+i);
-
-	}
-	}*/
-
-	//motionEnergy = 0;
-
-
-
-
-	//should access PLAYER 1 [ kinect.getSkeletons().size() - 1 ]
-	// PLAYER 2 [ kinect.getSkeletons().size() - 2 ]
 	if(kinect.isNewSkeleton()) {
 
-		motionEnergy*= 0.99;
+		//motionEnergy*= 0.95;
 	} else {
 		motionEnergy = 0;
 	}
 
 	if(kinect.isNewSkeleton()) {
 
+		//p1Updated = false;
+		//p2Updated = false;
 
+		//if (!player1Exists || !player2Exists){
 
 		for( int i = 0; i < kinect.getSkeletons().size(); i++) 
 		{
@@ -137,223 +133,135 @@ void testApp::update()
 			cout << "skeletons: " << i << endl;
 			i -= 1;*/
 
-			//if(kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD) != kinect.getSkeletons().at(i).end())
 			if(kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD) != kinect.getSkeletons().at(i).end())
 
 			{
 
-				// just get the first one
-
-				//is z really necessary?
-				SkeletonBone headBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second;
-				SkeletonBone lHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_LEFT)->second;
-				SkeletonBone rHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_RIGHT)->second;
-				SkeletonBone lWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_LEFT)->second;
-				SkeletonBone rWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_RIGHT)->second;
-				ofVec3f hb( headBone.getScreenPosition().x, headBone.getScreenPosition().y, 0 );
-				head = head.getInterpolated(hb, 0.5);
-				head.z =  ofInterpolateCosine( head.z, headBone.getStartPosition().x, 0.5) + 0.1;
-				ofVec3f lhb(lHandBone.getScreenPosition().x, lHandBone.getScreenPosition().y, 0);
-				lHand = lHand.getInterpolated( lhb, 0.5);
-				lHand.z = ofInterpolateCosine( lHand.z, lHandBone.getStartPosition().x, 0.5);
-				ofVec3f rhb(rHandBone.getScreenPosition().x, rHandBone.getScreenPosition().y, 0);
-				rHand = rHand.getInterpolated( rhb, 0.5);
-				rHand.z = ofInterpolateCosine( rHand.z, rHandBone.getStartPosition().x, 0.5);
-				ofVec3f lwb(lWristBone.getScreenPosition().x, lWristBone.getScreenPosition().y, 0);
-				lWrist = lWrist.getInterpolated( lwb, 0.5);
-				lWrist.z = ofInterpolateCosine( lWrist.z, lWristBone.getStartPosition().x, 0.5);
-				ofVec3f rwb(rWristBone.getScreenPosition().x, rWristBone.getScreenPosition().y, 0);
-				rWrist = rWrist.getInterpolated( rwb, 0.5);
-				rWrist.z = ofInterpolateCosine( rWrist.z, rWristBone.getStartPosition().x, 0.5);
-
-				/*cout << headBone.getScreenPosition()  << endl;
-				cout << rHandBone.getScreenPosition() << endl;
-				cout << lHandBone.getScreenPosition() << endl;*/
-
-				//lHandPos = lHandBone.getScreenPosition();
-				//rHandPos = rHandBone.getScreenPosition();
-
-				//
-				/*lHandAdj = ofVec3f(lHand.x*plane.getWidth()/640,lHand.y*plane.getHeight()/480);
-				rHandAdj = ofVec3f(rHand.x*plane.getWidth()/640,rHand.y*plane.getHeight()/480);
-				lWristAdj = ofVec3f(lWrist.x*plane.getWidth()/640,lWrist.y*plane.getHeight()/480);
-				cout << "Left Wrist: " << lWristAdj << endl;
-				rWristAdj = ofVec3f(rWrist.x*plane.getWidth()/640,rWrist.y*plane.getHeight()/480);
-				cout << "Right Wrist: " << rWristAdj << endl;*/
-
-
-				//----SPELL POSITION HERE:-----
-
-				//ofVec3f spellPos = ofVec3f(lHandAdj + (rHandAdj-lHandAdj)*0.5);
-
-				//for feeding to shader:
-
-
-				float lDistMoved = lHand.squareDistance(prevLHand);
-				float rDistMoved = rHand.squareDistance(prevRHand);
-				float totalMoved = rDistMoved*0.1 + lDistMoved*0.1;
-				totalMoved = ofClamp(totalMoved,0,50);
-
-
-				//----ALTERNATIVE MOTION ENERGY APPROACH
-				if (lDistMoved > 100 || rDistMoved > 100){
-					motionEnergy += totalMoved;
+				if (!player1Exists){
+					player1 = new Player();
+					player1->setup(1,i);
+					player1Exists = true;
+					cout << "PLAYER 1 set up at Index: " << i << endl; 
 				}
 
-				if (lDistMoved > 100 || rDistMoved > 100){
-					motion.push_back(totalMoved);
+				if (!player2Exists && player1Exists){
+					if (i != player1->pIndex){
+						player2 = new Player();
+						player2->setup(2,i);
+						player2Exists = true;
+						cout << "PLAYER 2 set up at Index: " << i << endl; 
+					}
 				}
+			}
+			//}
+		}
 
-				if (motion.size() > 120) {
-					//delete motion[motion.size()-1];
-					motion.erase(motion.begin());
-				} 
-				else if (motion.size() > 1 && totalMoved < 10) {
-					motion.erase(motion.begin());
-				}
+		int p1index = -1;
 
-				spellIntensity = ofMap(motionEnergy,0,6000,0.0,1.0,true);
+		if (player1Exists){
 
+			//could be while !p1updated || !p2Updated
+			for( int i = 0; i < kinect.getSkeletons().size(); i++) 
+			{
 
+				/*int i = kinect.getSkeletons().size();
+				cout << "skeletons: " << i << endl;
+				i -= 1;*/
 
-				//for (auto & move : motion) {
-				//	motionEnergy += move;
-				//}
+				if(kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD) != kinect.getSkeletons().at(i).end()
+					&& kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second.getScreenPosition().x < 320 )
+				{
 
-				cout << "Motion Energy: " << motionEnergy << endl;
+					//if (i=player1->pIndex){
+					// just get the first one
+					//is z really necessary?
 
-				//=====SET A TIME GATE ON NEW FLAME???====//
+					SkeletonBone headBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second;
+					SkeletonBone lHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_LEFT)->second;
+					SkeletonBone rHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_RIGHT)->second;
+					SkeletonBone lWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_LEFT)->second;
+					SkeletonBone rWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_RIGHT)->second;
+					SkeletonBone lElbowBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_LEFT)->second;
+					SkeletonBone rElbowBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_RIGHT)->second;
 
-				//------NEED TO REACTIVATE HAND SPACING FOR THIS??
-				float handSpacing = lWrist.distance(rWrist);
+					lHand1 = getBone(lHandBone,lHand1);
+					rHand1 = getBone(rHandBone,rHand1);
+					lWrist1 = getBone(lWristBone,lWrist1);
+					rWrist1 = getBone(rWristBone,rWrist1);
+					lElbow1 = getBone(lElbowBone,lElbow1);
+					rElbow1 = getBone(rElbowBone,rElbow1);
 
-				//cout << "Hand Spacing: " << handSpacing << endl;
-				//cout << "Max Spacing: " << plane.getHeight()*0.1 << endl;
-				//if (handSpacing < plane.getHeight()*0.1 && lHandAdj.x > plane.getWidth()*0.7){
+					player1->updateSkeleton(&lHand1,&rHand1,&lWrist1,&rWrist1,&lElbow1,&rElbow1);
 
-				//if (handSpacing < plane.getHeight()*0.1 && lHandAdj.x > lWristAdj.x && rHandAdj.x > rWristAdj.x){
+					//cout << "Player1 updated - elbow is:" << lElbow1.x << "," << lElbow1.y << endl;
+					//p1Updated=true;
 
-				if (lHand.x < rHand.x && !spellExists && !spellCalled) {
+					//ofVec3f hb( headBone.getScreenPosition().x, headBone.getScreenPosition().y, 0 );
+					//head = head.getInterpolated(hb, 0.5);
+					////head.z =  ofInterpolateCosine( head.z, headBone.getStartPosition().x, 0.5) + 0.1;
+					//ofVec3f lhb(lHandBone.getScreenPosition().x, lHandBone.getScreenPosition().y, 0);
+					//lHand = lHand.getInterpolated( lhb, 0.5);
+					////lHand.z = ofInterpolateCosine( lHand.z, lHandBone.getStartPosition().x, 0.5);
+					//ofVec3f rhb(rHandBone.getScreenPosition().x, rHandBone.getScreenPosition().y, 0);
+					//rHand = rHand.getInterpolated( rhb, 0.5);
+					////rHand.z = ofInterpolateCosine( rHand.z, rHandBone.getStartPosition().x, 0.5);
+					//ofVec3f lwb(lWristBone.getScreenPosition().x, lWristBone.getScreenPosition().y, 0);
+					//lWrist = lWrist.getInterpolated( lwb, 0.5);
+					////lWrist.z = ofInterpolateCosine( lWrist.z, lWristBone.getStartPosition().x, 0.5);
+					//ofVec3f rwb(rWristBone.getScreenPosition().x, rWristBone.getScreenPosition().y, 0);
+					//rWrist = rWrist.getInterpolated( rwb, 0.5);
+					////rWrist.z = ofInterpolateCosine( rWrist.z, rWristBone.getStartPosition().x, 0.5);
+					//ofVec3f leb(lElbowBone.getScreenPosition().x, lElbowBone.getScreenPosition().y, 0);
+					//lElbow = lElbow.getInterpolated( leb, 0.5);
+					////lWrist.z = ofInterpolateCosine( lWrist.z, lWristBone.getStartPosition().x, 0.5);
+					//ofVec3f reb(rElbowBone.getScreenPosition().x, rElbowBone.getScreenPosition().y, 0);
+					//rElbow = rElbow.getInterpolated( reb, 0.5);
 
-					newFireCanBeCalled = true;
-				}
+					p1index = i;
 
+					//return;
 
-				if (handSpacing < plane.getHeight()*0.1 && lHand.x > lWrist.x && rHand.x > rWrist.x && abs(lWrist.y - rWrist.y) < 50 && spellExists){
-
-					//if (ofGetElapsedTimeMillis() > spellCreateTime + 
-					spellFired = true;
-					fCrackle.stop();
-					playSound = true;
-					//playSound(fire);
-
-					//for (int i=0; i<flames.size(); i++){
-					//	flames[i]->launch();
+					//break;
 					//}
 				}
+			}
+		}
 
-				if (playSound){
-					fWhoosh.setVolume(ofMap(spellIntensity,0.0,1.0,0.5,1.0));
-					fWhoosh.setSpeed(ofMap(spellIntensity,0.0,1.0,1.0,0.5));
-					fWhoosh.play();
-					playSound = false;
+		if (player2Exists){
+			for( int i = 0; i < kinect.getSkeletons().size(); i++) 
+			{
+				//if (i!=player1->pIndex){
+				//if (i!=p1index){
+					if(kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD) != kinect.getSkeletons().at(i).end()
+						&& kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second.getScreenPosition().x >= 320 && i!=p1index)
+					{
+
+						//if (i=player2->pIndex){
+
+						SkeletonBone headBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second;
+						SkeletonBone lHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_LEFT)->second;
+						SkeletonBone rHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_RIGHT)->second;
+						SkeletonBone lWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_LEFT)->second;
+						SkeletonBone rWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_RIGHT)->second;
+						SkeletonBone lElbowBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_LEFT)->second;
+						SkeletonBone rElbowBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_RIGHT)->second;
+
+						lHand2 = getBone(lHandBone,lHand2);
+						rHand2 = getBone(rHandBone,rHand2);
+						lWrist2 = getBone(lWristBone,lWrist2);
+						rWrist2 = getBone(rWristBone,rWrist2);
+						lElbow2 = getBone(lElbowBone,lElbow2);
+						rElbow2 = getBone(rElbowBone,rElbow2);
+
+						player2->updateSkeleton(&lHand2,&rHand2,&lWrist2,&rWrist2,&lElbow2,&rElbow2);
+						cout << "Player2 updated - elbow is:" << lElbow2.x << "," << lElbow2.y << endl;
+						//p2Updated=true;
+
+						return;
+						//break;
+						//}
+					//}
 				}
-
-
-
-				if (spellPos.x > 640) {
-					spellExists = false;
-					spellFired = false;
-					motion.clear();
-				}
-
-
-
-				//---Put these in sep. function with pointer to hand positions?)
-				cout << "Angle between hands: " << ofVec3f(1,0,0).angle(lHand - rHand) << " DEGREES" << endl;
-				if (rHand.x - lHand.x < 0 && prevRHand.x - prevLHand.x > 0 && abs(rHand.y-lHand.y) < 50 && !spellCalled && !spellExists && newFireCanBeCalled) { //&& !flameExists  //abs(rHand.y-lHand.y)
-					spellFired = false;
-					spellCalled = true;
-					//spellCreateDelay = ofGetElapsedTimef() +0.3;
-					motionEnergy = 0;
-
-				}
-
-				if (spellCalled && !spellExists){
-					spellFired = false;
-					if (rHand.x - lHand.x > 5) {
-						spellExists = true;
-						fWhoosh.play();
-						fCrackle.play();
-						//fWhoosh.setSpeed( 0.1f );
-						//fWhoosh.setPan(ofMap(x, 0, widthStep, -1, 1, true));
-						spellCalled = false;
-
-					}
-				}
-
-				if (fCrackle.getIsPlaying()){
-					fCrackle.setVolume(ofMap(spellIntensity,0.0,1.0,0.2,1.0));
-					fCrackle.setSpeed(ofMap(spellIntensity,0.0,1.0,1.0,0.5));
-				}
-
-				if (spellExists){
-					newFireCanBeCalled = false;
-				}
-
-				//cout << flamePos << endl;
-
-				//if (flames.size() < 1){
-				//	Flame *f = new Flame();
-
-				//	//ofVec3f startPos = ofVec3f(lHand.x,lHand.y);
-				//	f->setup(&spellPos);
-				//	flames.push_back(f);
-				//}
-
-				//cout << kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second.getScreenPosition() << endl;
-				//cout << kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_LEFT)->second.getScreenPosition() << endl;
-				//cout << kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_RIGHT)->second.getScreenPosition() << endl;
-
-				/*jointDistance = head.distance(rHand);
-				jointDistance += lHand.distance(rHand);
-				jointDistance += lHand.distance(head);*/
-
-				hasSkeleton = true;
-
-				
-
-				for (int i=0; i<flames.size(); i++){
-					/*ofVec3f clearForce = ofVec3f(0,0);
-					flames[i]->updateThrowForce(&clearForce);
-					motionEnergy = motion.size();*/
-					//flames[i]->intensify(&motionEnergy);
-				}
-
-
-				for (int i=0; i<flames.size(); i++){
-					//ofVec3f movedPos = ofVec3f(lHand.x,lHand.y);
-					//flames[i]->flameMoved(&spellPos);
-					//flames[i]->update();
-				}
-
-				//ofVec3f wristSpacingVec = lHandAdj-rHandAdj;
-				//float handSpacing = handSpacingVec.length();
-
-				if (spellExists){
-					if (spellFired){
-						spellPos.x *= 1.2;
-					} else {
-						spellPos = ofVec3f(lHand + (rHand-lHand)*0.5);
-						//cout << rHand.x << endl;
-					}
-				}
-
-				prevLHand = lHand;
-				prevRHand = rHand;
-
-
-				return;
 			}
 		}
 	}
@@ -375,52 +283,57 @@ void testApp::draw(){
 	shader.begin();
 	shader.setUniform1f("time", ofGetElapsedTimef());///2.0);
 	shader.setUniform2f("resolution", xResolution, yResolution);
-	shader.setUniformTexture("videoTex", kinect.getColorTexture(), 0);
-	//shader.setUniformTexture("videoTex", kinect.getDepthTexture(), 0);
+	//shader.setUniformTexture("videoTex", kinect.getColorTexture(), 0);
+	shader.setUniformTexture("videoTex", kinect.getDepthTexture(), 0);
 
-	if(hasSkeleton)
+	//if(hasSkeleton)
+	if (player1Exists)
 	{
 
-		// something in here blows up in release mode
-		//shader.setUniform3f("headPoint", 1.0 + (head.x/-320.0), 1.0 + (head.y/-240.0) - 0.1,head.z);
-		//shader.setUniform3f("lHandPoint", 1.0 + (lHand.x/-320.0), 1.0 + (lHand.y/-240.0), 0);
-		//shader.setUniform3f("lHandPoint", 1.0 + (lHand.x/-320.0), 1.0 + (lHand.y/-240.0), 0);
-		//shader.setUniform3f("rHandPoint", 1.0 + (rHand.x/-320.0), 1.0 + (rHand.y/-240.0), 0);
+		shader.setUniform3f("p1SpellPoint", 1.0 + (player1->spellPos.x/-320.0), 1.0 + (player1->spellPos.y/-240.0), 0);
+		shader.setUniform1f("p1Intensity", player1->spellIntensity);
 
-		//shader.setUniform3f("lHandPoint", 1.0 + (lHand.x/-320.0), 1.0 + (lHand.y/-240.0), 0);
-		//cout << 1.0 + (lHand.x/-320.0) << " , " << 1.0 + (lHand.y/-240.0) << endl;
+		if (player1->spellExists){
 
-		//shader.setUniform3f("rHandPoint", 1.0 + (rHand.x/-320.0), 1.0 + (rHand.y/-240.0), 0);
-
-		shader.setUniform3f("spellPoint", 1.0 + (spellPos.x/-320.0), 1.0 + (spellPos.y/-240.0), 0);
-
-		//shader.setUniform1f("frequency", p4);
-		//shader.setUniform1f("scalar", p5);
-		//shader.setUniform1f("blobDensity", jointDistance/600.0);
-		//shader.setUniform1f("blobDensity", 2.0);
-
-		//float flameIntense = ofMap(motionEnergy,0,10000,0.5,0.01,true);
-		if (spellExists){
+			//cout << "Shader Knows Player 1 spell called" << endl;
 			//if (spellType == "flame"){
-			shader.setUniform1i("flame", 1);
-		}else {
-			shader.setUniform1i("flame", 0);
+
+			//set and pass a number for each spell type
+			shader.setUniform1i("p1SpellType", 1);
+		} else {
+			shader.setUniform1i("p1SpellType", 0);
 		}
 		//}
 
+	} else {
 
-		shader.setUniform1f("intensity", spellIntensity);
+		shader.setUniform3f("p1SpellPoint", p3, p3, p3);
+		shader.setUniform1f("p1Intensity", 0.0);
+		shader.setUniform1i("p1SpellType", 0);
+	}
+
+	if (player2Exists)
+	{
+
+		shader.setUniform3f("p2SpellPoint", 1.0 + (player2->spellPos.x/-320.0), 1.0 + (player2->spellPos.y/-240.0), 0);
+
+		shader.setUniform1f("p2Intensity", player2->spellIntensity);
+
+		if (player2->spellExists){
+			//if (spellType == "flame"){
+
+			//set and pass a number for each spell type
+			shader.setUniform1i("p2SpellType", 1);
+		} else {
+			shader.setUniform1i("p2SpellType", 0);
+		}
+		//}
 
 	} else {
 
-		//shader.setUniform3f("headPoint", p1, p1, p1);
-		//shader.setUniform3f("lHandPoint", p2, p2, p2);
-		//shader.setUniform3f("rHandPoint", p3, p3, p3);
-		shader.setUniform3f("spellPoint", p3, p3, p3);
-		/*shader.setUniform1f("frequency", p4);
-		shader.setUniform1f("scalar", p5);
-		shader.setUniform1f("blobDensity", p6);*/
-		shader.setUniform1f("intensity", 0.0);
+		shader.setUniform3f("p2SpellPoint", p3, p3, p3);
+		shader.setUniform1f("p2Intensity", 0.0);
+		shader.setUniform1i("p2SpellType", 0);
 	}
 
 	plane.draw();
@@ -430,29 +343,48 @@ void testApp::draw(){
 
 	ofPopMatrix();
 
-	ofPushStyle();
-	for (int i=0; i<flames.size(); i++){
-		//flames[i]->draw();
-	}
-	ofPopStyle();
+	//ofPushStyle();
+	//for (int i=0; i<flames.size(); i++){
+	//flames[i]->draw();
+	//}
+	//ofPopStyle();
 
-	if(hasSkeleton)
+	if(player1Exists)
 	{
 		ofSetColor(255,0,0);
 		ofSetLineWidth(5);
-		ofLine(lHand,rHand);
+		//ofLine(player->lHand,player->rHand);
 
 		ofSetColor(255,255,100);
-		ofDrawBitmapString("SKELETON DETECTED", ofGetWidth()*0.5, 32);
+		ofDrawBitmapString("SKELETON 1 DETECTED", ofGetWidth()*0.25, 32);
+
+	}
+
+	if(player2Exists)
+	{
+		ofSetColor(255,0,0);
+		ofSetLineWidth(5);
+		//ofLine(player->lHand,player->rHand);
+
+		ofSetColor(255,255,100);
+		ofDrawBitmapString("SKELETON 2 DETECTED", ofGetWidth()*0.75, 32);
 
 	}
 
 
 	if(!hasSkeleton) 
 	{
-		ofEnableAlphaBlending();
-		gui.draw();
+		/*ofEnableAlphaBlending();
+		gui.draw();*/
 	}
+}
+
+//--------------------------------------------------------------
+
+ofVec3f testApp::getBone(SkeletonBone bone, ofVec3f bodyPart){
+	ofVec3f tempBone( bone.getScreenPosition().x, bone.getScreenPosition().y, 0);
+	bodyPart = bodyPart.getInterpolated(tempBone, 0.5);
+	return bodyPart;
 }
 
 //--------------------------------------------------------------
@@ -463,6 +395,11 @@ void testApp::setSpellPosition(ofVec3f *pos){
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
 	if (key == 'f'){
+		xResolution = 1600;
+		yResolution = 480*xResolution/640;
+		plane.set(xResolution, yResolution, 4, 4);
+		plane.setPosition(0, 0, 0);
+		plane.mapTexCoords(0, 0, xResolution, yResolution);
 		ofToggleFullscreen();
 	}
 

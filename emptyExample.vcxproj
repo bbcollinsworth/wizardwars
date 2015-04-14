@@ -119,6 +119,7 @@ xcopy /e /i /y "$(ProjectDir)..\libs\KinectCommonBridge\lib\windows\x86\*.dll" "
     <ClCompile Include="..\src\ofxKinectCommonBridge.cpp" />
     <ClCompile Include="src\Flame.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Player.cpp" />
     <ClCompile Include="src\Spark.cpp" />
     <ClCompile Include="src\testApp.cpp" />
   </ItemGroup>
@@ -138,6 +139,7 @@ xcopy /e /i /y "$(ProjectDir)..\libs\KinectCommonBridge\lib\windows\x86\*.dll" "
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="src\Flame.h" />
+    <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\Spark.h" />
     <ClInclude Include="src\testApp.h" />
   </ItemGroup>

@@ -5,6 +5,7 @@
 #include "ofxGui.h"
 #include "Flame.h"
 #include "Spark.h"
+#include "Player.h"
 
 class testApp : public ofBaseApp{
 	public:
@@ -12,6 +13,7 @@ class testApp : public ofBaseApp{
 		void update();
 		void draw();
 		void setSpellPosition(ofVec3f *pos);
+		ofVec3f getBone(SkeletonBone bone, ofVec3f bodyPart);
 		
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -27,9 +29,16 @@ class testApp : public ofBaseApp{
 		ofShader shader;
 		ofPlanePrimitive plane;
 
+		Player * player1;
+		Player * player2;
+		bool player1Exists, player2Exists;
+		bool p1Updated, p2Updated;
+
 		float xResolution, yResolution;
 
-		ofVec3f head, lHand, rHand, lWrist, rWrist, prevLHand, prevRHand;
+		ofVec3f head1, lHand1, rHand1, lWrist1, rWrist1, lElbow1, rElbow1;
+		ofVec3f head2, lHand2, rHand2, lWrist2, rWrist2, lElbow2, rElbow2; 
+		ofVec3f prevLHand, prevRHand;
 		bool hasSkeleton;
 
 		float jointDistance;
@@ -42,7 +51,7 @@ class testApp : public ofBaseApp{
 
 		//spell creation logic
 		bool spellFired;
-		bool spellCalled, spellExists, newFireCanBeCalled;
+		//bool spellCalled, spellExists, newFireCanBeCalled, spellCanBeFired;
 		float spellCreateDelay;
 
 		ofVec3f mousePos;
