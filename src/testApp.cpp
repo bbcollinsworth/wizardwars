@@ -16,7 +16,7 @@ void testApp::setup(){
 	//kinect.initDepthStream(320, 240, true); //could I just change this to 640,480?
 	kinect.initDepthStream(640, 480, true); //could I just change this to 640,480?
 	kinect.initSkeletonStream(true);
-	kinect.setDepthClipping(1000.0F,1500.0F);
+	kinect.setDepthClipping(900.0F,1500.0F);
 
 	kinect.start();
 
@@ -110,6 +110,9 @@ void testApp::setup(){
 void testApp::update()
 {
 	kinect.update();
+	//ofPixels d = kinect.getDepthPixelsRef();
+
+	//cout << d.size() << endl;
 
 
 	if(kinect.isNewSkeleton()) {
@@ -160,6 +163,10 @@ void testApp::update()
 
 		if (player1Exists){
 
+			if (player1->impactCheckCalled){
+				impactCheck(1);
+			}
+
 			//could be while !p1updated || !p2Updated
 			for( int i = 0; i < kinect.getSkeletons().size(); i++) 
 			{
@@ -191,76 +198,55 @@ void testApp::update()
 					lElbow1 = getBone(lElbowBone,lElbow1);
 					rElbow1 = getBone(rElbowBone,rElbow1);
 
-					player1->updateSkeleton(&lHand1,&rHand1,&lWrist1,&rWrist1,&lElbow1,&rElbow1);
-
-					//cout << "Player1 updated - elbow is:" << lElbow1.x << "," << lElbow1.y << endl;
-					//p1Updated=true;
-
-					//ofVec3f hb( headBone.getScreenPosition().x, headBone.getScreenPosition().y, 0 );
-					//head = head.getInterpolated(hb, 0.5);
-					////head.z =  ofInterpolateCosine( head.z, headBone.getStartPosition().x, 0.5) + 0.1;
-					//ofVec3f lhb(lHandBone.getScreenPosition().x, lHandBone.getScreenPosition().y, 0);
-					//lHand = lHand.getInterpolated( lhb, 0.5);
-					////lHand.z = ofInterpolateCosine( lHand.z, lHandBone.getStartPosition().x, 0.5);
-					//ofVec3f rhb(rHandBone.getScreenPosition().x, rHandBone.getScreenPosition().y, 0);
-					//rHand = rHand.getInterpolated( rhb, 0.5);
-					////rHand.z = ofInterpolateCosine( rHand.z, rHandBone.getStartPosition().x, 0.5);
-					//ofVec3f lwb(lWristBone.getScreenPosition().x, lWristBone.getScreenPosition().y, 0);
-					//lWrist = lWrist.getInterpolated( lwb, 0.5);
-					////lWrist.z = ofInterpolateCosine( lWrist.z, lWristBone.getStartPosition().x, 0.5);
-					//ofVec3f rwb(rWristBone.getScreenPosition().x, rWristBone.getScreenPosition().y, 0);
-					//rWrist = rWrist.getInterpolated( rwb, 0.5);
-					////rWrist.z = ofInterpolateCosine( rWrist.z, rWristBone.getStartPosition().x, 0.5);
-					//ofVec3f leb(lElbowBone.getScreenPosition().x, lElbowBone.getScreenPosition().y, 0);
-					//lElbow = lElbow.getInterpolated( leb, 0.5);
-					////lWrist.z = ofInterpolateCosine( lWrist.z, lWristBone.getStartPosition().x, 0.5);
-					//ofVec3f reb(rElbowBone.getScreenPosition().x, rElbowBone.getScreenPosition().y, 0);
-					//rElbow = rElbow.getInterpolated( reb, 0.5);
+					player1->updateSkeleton(&lHand1,&rHand1,&lWrist1,&rWrist1,&lElbow1,&rElbow1);		
 
 					p1index = i;
 
-					//return;
-
-					//break;
-					//}
 				}
 			}
+
+
+
+
 		}
 
 		if (player2Exists){
+
+			if (player2->impactCheckCalled){
+				impactCheck(2);
+			}
+
 			for( int i = 0; i < kinect.getSkeletons().size(); i++) 
 			{
 				//if (i!=player1->pIndex){
 				//if (i!=p1index){
-					if(kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD) != kinect.getSkeletons().at(i).end()
-						&& kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second.getScreenPosition().x >= 320 && i!=p1index)
-					{
+				if(kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD) != kinect.getSkeletons().at(i).end()
+					&& kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second.getScreenPosition().x >= 320 && i!=p1index)
+				{
 
-						//if (i=player2->pIndex){
+					//if (i=player2->pIndex){
 
-						SkeletonBone headBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second;
-						SkeletonBone lHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_LEFT)->second;
-						SkeletonBone rHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_RIGHT)->second;
-						SkeletonBone lWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_LEFT)->second;
-						SkeletonBone rWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_RIGHT)->second;
-						SkeletonBone lElbowBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_LEFT)->second;
-						SkeletonBone rElbowBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_RIGHT)->second;
+					SkeletonBone headBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second;
+					SkeletonBone lHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_LEFT)->second;
+					SkeletonBone rHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_RIGHT)->second;
+					SkeletonBone lWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_LEFT)->second;
+					SkeletonBone rWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_RIGHT)->second;
+					SkeletonBone lElbowBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_LEFT)->second;
+					SkeletonBone rElbowBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_RIGHT)->second;
 
-						lHand2 = getBone(lHandBone,lHand2);
-						rHand2 = getBone(rHandBone,rHand2);
-						lWrist2 = getBone(lWristBone,lWrist2);
-						rWrist2 = getBone(rWristBone,rWrist2);
-						lElbow2 = getBone(lElbowBone,lElbow2);
-						rElbow2 = getBone(rElbowBone,rElbow2);
+					lHand2 = getBone(lHandBone,lHand2);
+					rHand2 = getBone(rHandBone,rHand2);
+					lWrist2 = getBone(lWristBone,lWrist2);
+					rWrist2 = getBone(rWristBone,rWrist2);
+					lElbow2 = getBone(lElbowBone,lElbow2);
+					rElbow2 = getBone(rElbowBone,rElbow2);
 
-						player2->updateSkeleton(&lHand2,&rHand2,&lWrist2,&rWrist2,&lElbow2,&rElbow2);
-						cout << "Player2 updated - elbow is:" << lElbow2.x << "," << lElbow2.y << endl;
-						//p2Updated=true;
+					player2->updateSkeleton(&lHand2,&rHand2,&lWrist2,&rWrist2,&lElbow2,&rElbow2);
+					cout << "Player2 updated - elbow is:" << lElbow2.x << "," << lElbow2.y << endl;
+					//p2Updated=true;
 
-						return;
-						//break;
-						//}
-					//}
+					return;
+
 				}
 			}
 		}
@@ -303,6 +289,11 @@ void testApp::draw(){
 		} else {
 			shader.setUniform1i("p1SpellType", 0);
 		}
+
+		if (player1->impact){
+			//shader.setUniform1i("p1SpellType", 10);
+		} //else {
+		//	shader.setUniform1i("p1Impact", 0);
 		//}
 
 	} else {
@@ -316,7 +307,6 @@ void testApp::draw(){
 	{
 
 		shader.setUniform3f("p2SpellPoint", 1.0 + (player2->spellPos.x/-320.0), 1.0 + (player2->spellPos.y/-240.0), 0);
-
 		shader.setUniform1f("p2Intensity", player2->spellIntensity);
 
 		if (player2->spellExists){
@@ -327,6 +317,12 @@ void testApp::draw(){
 		} else {
 			shader.setUniform1i("p2SpellType", 0);
 		}
+
+		if (player2->impact){
+			//shader.setUniform1i("p2SpellType", 10);
+		} //else {
+		//shader.setUniform1i("p2Impact", 0);
+		//}
 		//}
 
 	} else {
@@ -343,11 +339,6 @@ void testApp::draw(){
 
 	ofPopMatrix();
 
-	//ofPushStyle();
-	//for (int i=0; i<flames.size(); i++){
-	//flames[i]->draw();
-	//}
-	//ofPopStyle();
 
 	if(player1Exists)
 	{
@@ -385,6 +376,67 @@ ofVec3f testApp::getBone(SkeletonBone bone, ofVec3f bodyPart){
 	ofVec3f tempBone( bone.getScreenPosition().x, bone.getScreenPosition().y, 0);
 	bodyPart = bodyPart.getInterpolated(tempBone, 0.5);
 	return bodyPart;
+}
+
+
+//--------------------------------------------------------------
+
+void testApp::impactCheck(int _pNum){
+	ofPixels d = kinect.getDepthPixelsRef();
+	int pixelIndex;
+	if (_pNum == 1){
+		pixelIndex = player1->spellPos.x + (player1->spellPos.y*640);
+	} else if (_pNum == 2) {
+		pixelIndex = player2->spellPos.x + (player2->spellPos.y*640);
+	}
+	pixelIndex *= 3;
+	int pixelColor = (int)d[pixelIndex];
+	int summedPix = 0;
+
+	if (pixelColor > 0){
+
+		vector <int> nextPixels;
+		for (int i=3; i<=30; i+=3){
+			//NOTE: WILL GOING OFF EDGE OF SCREEN & LOOPING EVER BE ISSUE?
+			if (_pNum == 1){
+				nextPixels.push_back((int)d[pixelIndex + i]);
+			}
+			if (_pNum == 2){
+				nextPixels.push_back((int)d[pixelIndex - i]);
+			}
+		}
+
+		for (auto & px : nextPixels){
+			summedPix += px;	
+		}
+
+
+		if (summedPix/10 > 10){
+			if (_pNum == 1){
+				player1->impact = true;
+				if (player1->impactCheckCalled){
+					player1->playBoom();
+				}
+				player1->impactCheckCalled = false;
+			}
+			if (_pNum == 2){
+				player2->impact = true;
+				if (player2->impactCheckCalled){
+					player2->playBoom();
+				}
+				player2->impactCheckCalled = false;
+			}
+		}
+
+
+
+	}
+
+	//int next
+
+	//if (_pNum == 1){
+	//player1->
+	//}
 }
 
 //--------------------------------------------------------------

@@ -12,7 +12,10 @@ void Player::setup(int _playerNum, int _pIndex){
 	playerNum = _playerNum;
 	pIndex = _pIndex;
 
-	vel = 10;
+	vel = 15;
+
+	boom.loadSound("sounds/impactEd.mp3");
+	boom.setMultiPlay(false);
 
 	fWhoosh.loadSound("sounds/fire_whoosh.wav");
 	fWhoosh.setVolume(0.75);
@@ -29,6 +32,8 @@ void Player::setup(int _playerNum, int _pIndex){
 
 	spellFired = false;
 	spellCanBeFired = false;
+	impactCheckCalled = false;
+	impact = false;
 
 	playSound = false;
 }
@@ -58,13 +63,15 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 
 	spellIntensity = ofMap(motionEnergy,0,6000,0.0,1.0,true);
 
+	spellPan = ofMap(spellPos.x,0,640,-1.0,1.0);
+
 	//cout << "Motion Energy: " << motionEnergy << endl;
 
 	//=====SET A TIME GATE ON NEW FLAME???====//
 
 	float handSpacing = lWrist.distance(rWrist);
 
-	if (lHand.x < rHand.x - 20 && !spellExists && !spellCalled) {
+	if (lHand.x < rHand.x - 40 && !spellExists && !spellCalled) {
 
 		newFireCanBeCalled = true;
 	}
@@ -84,26 +91,13 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 				//if (ofGetElapsedTimeMillis() > spellCreateTime + 
 				fireSpell(10);
 				cout << "fireSpell called" << endl;
-				/*spellFired = true;
-				fCrackle.stop();
-				playSound = true;
-				spellCanBeFired = false;*/
-				//playSound(fire);
 
 			}
 		} else if (playerNum == 2){
 
 			if (handSpacing < 50 && lWrist.x < lElbow.x-20 && rWrist.x < rElbow.x-20 && abs(lWrist.y - rWrist.y) < 50 && spellExists){
 
-				//if (ofGetElapsedTimeMillis() > spellCreateTime + 
-				fireSpell(10);
-				/*vel = 10;
-				spellFired = true;
-				fCrackle.stop();
-				playSound = true;
-				spellCanBeFired = false;*/
-				//playSound(fire);
-
+				fireSpell(vel);
 
 			}
 		}
@@ -112,6 +106,7 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 	if (playSound){
 		fWhoosh.setVolume(ofMap(spellIntensity,0.0,1.0,0.5,1.0));
 		fWhoosh.setSpeed(ofMap(spellIntensity,0.0,1.0,1.0,0.5));
+		fWhoosh.setPan(spellPan);
 		fWhoosh.play();
 		playSound = false;
 	}
@@ -120,17 +115,17 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 
 	if (playerNum == 1){
 		if (spellPos.x > 640) {
-			spellExists = false;
-			spellFired = false;
+			clearSpell();
+			//spellExists = false;
+			//spellFired = false;
+			//impactCheckCalled = false;
 			//motion.clear();
 		}
 	}
 
 	if (playerNum == 2){
 		if (spellPos.x < 0) {
-			spellExists = false;
-			spellFired = false;
-			//motion.clear();
+			clearSpell();
 		}
 	}
 
@@ -152,8 +147,6 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 			spellExists = true;
 			fWhoosh.play();
 			fCrackle.play();
-			//fWhoosh.setSpeed( 0.1f );
-			//fWhoosh.setPan(ofMap(x, 0, widthStep, -1, 1, true));
 			spellCalled = false;
 
 			cout << "P1 Spell Exists" << endl;
@@ -164,6 +157,11 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 	if (fCrackle.getIsPlaying()){
 		fCrackle.setVolume(ofMap(spellIntensity,0.0,1.0,0.1,1.0));
 		fCrackle.setSpeed(ofMap(spellIntensity,0.0,1.0,0.5,1.5));
+		fCrackle.setPan(spellPan);
+	}
+
+	if (fWhoosh.getIsPlaying()){
+		fWhoosh.setPan(spellPan);
 	}
 
 	if (spellExists && !spellFired){
@@ -182,13 +180,27 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 
 		if (playerNum == 1){
 			spellPos.x += vel;
+			if (spellPos.x > 320){
+				impactCheckCalled = true;
+			}
 		} else if (playerNum == 2){
 			spellPos.x -= vel;
+			if (spellPos.x < 320){
+				impactCheckCalled = true;
+			}
 		}
+
+
 	} else {
 		spellPos = ofVec3f(lHand + (rHand-lHand)*0.5);
 		//cout << rHand.x << endl;
 	}
+
+	if (impact){
+		clearSpell();
+	}
+
+
 	//} 
 
 	prevLHand = lHand;
@@ -209,6 +221,24 @@ void Player::fireSpell(float startVel){
 	spellCanBeFired = false;
 	cout << "fireSpell completed" << endl;
 }
+
+//--------------------------------------------------------------
+
+void Player::clearSpell(){
+	spellExists = false;
+	spellFired = false;
+	impactCheckCalled = false;
+}
+
+//--------------------------------------------------------------
+
+void Player::playBoom(){
+	boom.setVolume(ofMap(spellIntensity,0.0,1.0,0.1,1.0));
+	boom.setSpeed(ofMap(spellIntensity,0.0,1.0,0.3,1.0));
+	boom.setPan(spellPan);
+	boom.play();
+}
+
 
 //--------------------------------------------------------------
 ofVec3f Player::getSpellPos(){

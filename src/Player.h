@@ -10,7 +10,9 @@ public:
 	void setup(int _playerNum, int _pIndex);
 	void updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, ofVec3f *_rWrist, ofVec3f *_lElbow, ofVec3f *_rElbow);
 	void fireSpell(float startVel);
+	void clearSpell();
 	void draw();
+	void playBoom();
 	ofVec3f getSpellPos();
 	int doesSpellExist();
 
@@ -27,7 +29,8 @@ public:
 
 	//spell creation logic
 	bool spellFired;
-	bool spellCalled, spellExists, newFireCanBeCalled, spellCanBeFired;
+	bool spellCalled, spellExists, newFireCanBeCalled, spellCanBeFired, impactCheckCalled;
+	bool impact;
 	float spellCreateDelay;
 
 	float vel;
@@ -36,6 +39,8 @@ public:
 	bool playSound;
 	ofSoundPlayer fCrackle;
 	ofSoundPlayer fWhoosh;
+	ofSoundPlayer boom;
+	float spellPan;
 
 	~Player(void);
 };

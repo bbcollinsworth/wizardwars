@@ -14,6 +14,7 @@ class testApp : public ofBaseApp{
 		void draw();
 		void setSpellPosition(ofVec3f *pos);
 		ofVec3f getBone(SkeletonBone bone, ofVec3f bodyPart);
+		void impactCheck(int _pNum);
 		
 		void keyPressed(int key);
 		void keyReleased(int key);
