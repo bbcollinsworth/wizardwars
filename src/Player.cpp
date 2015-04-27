@@ -12,7 +12,7 @@ void Player::setup(int _playerNum, int _pIndex){
 	playerNum = _playerNum;
 	pIndex = _pIndex;
 
-	vel = 15;
+	vel = 5;
 
 	boom.loadSound("sounds/impactEd.mp3");
 	boom.setMultiPlay(false);
@@ -30,23 +30,37 @@ void Player::setup(int _playerNum, int _pIndex){
 	spellExists = false;
 	newFireCanBeCalled = true;
 
+	spellState = 0;
+
 	spellFired = false;
 	spellCanBeFired = false;
 	impactCheckCalled = false;
 	impact = false;
 
+	impactCounter = 0;
+
 	playSound = false;
 }
 
 //--------------------------------------------------------------
-void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, ofVec3f *_rWrist, ofVec3f *_lElbow, ofVec3f *_rElbow){
+void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, ofVec3f *_rWrist, ofVec3f *_lElbow, ofVec3f *_rElbow, ofVec3f *_lFoot, ofVec3f *_rFoot){
 
-	lHand = *_lHand;
+	head = *_head;
+	lHand = *_lHand; // will these work as local variables?
 	rHand = *_rHand;
 	lWrist = *_lWrist;
 	rWrist = *_rWrist;
 	lElbow = *_lElbow;
 	rElbow = *_rElbow;
+	lFoot = *_lFoot;
+	rFoot = *_rFoot;
+
+	//lHand = _lHand; // will these work as local variables?
+	//rHand = _rHand;
+	//lWrist = _lWrist;
+	//rWrist = _rWrist;
+	//lElbow = _lElbow;
+	//rElbow = _rElbow;
 
 	float lDistMoved = lHand.squareDistance(prevLHand);
 	float rDistMoved = rHand.squareDistance(prevRHand);
@@ -71,33 +85,36 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 
 	float handSpacing = lWrist.distance(rWrist);
 
-	if (lHand.x < rHand.x - 40 && !spellExists && !spellCalled) {
-
+	if (lHand.x < rHand.x - 30 && !spellExists && !spellCalled) {
 		newFireCanBeCalled = true;
+		spellState = 1;
 	}
 
 
 	if (spellCanBeFired){
-		cout << "Can be Fired is true" << endl;
-		cout << "PlayerNum: " << playerNum << endl;
-		
+		//cout << "Can be Fired is true" << endl;
+		//cout << "PlayerNum: " << playerNum << endl;
+
 		//handSpacing testApp.plane.getHeight()*0.1
 		if (playerNum == 1){
-			cout << "playerNum is 1" << endl;
-			cout << "Handspacing is: " << handSpacing << endl;
-			cout << "LWrist: " << lWrist.x << "LElbow+20: " << lElbow.x+20 << endl;
-			if (handSpacing < 50 && lWrist.x > lElbow.x+20 && rWrist.x > rElbow.x+20 && abs(lWrist.y - rWrist.y) < 50 && spellExists){
+			//cout << "playerNum is 1" << endl;
+			//cout << "Handspacing is: " << handSpacing << endl;
+			//cout << "LWrist: " << lWrist.x << "LElbow+20: " << lElbow.x+20 << endl;
+			if (handSpacing < 50 && lWrist.x > lElbow.x+20 && rWrist.x > rElbow.x+20 && abs(lWrist.y - rWrist.y) < 50){
 
 				//if (ofGetElapsedTimeMillis() > spellCreateTime + 
-				fireSpell(10);
-				cout << "fireSpell called" << endl;
+				fireSpell(vel);
+				//impactCheckCalled = true;
+				//cout << "fireSpell called" << endl;
 
 			}
 		} else if (playerNum == 2){
 
-			if (handSpacing < 50 && lWrist.x < lElbow.x-20 && rWrist.x < rElbow.x-20 && abs(lWrist.y - rWrist.y) < 50 && spellExists){
+			if (handSpacing < 50 && lWrist.x < lElbow.x-20 && rWrist.x < rElbow.x-20 && abs(lWrist.y - rWrist.y) < 50){
 
 				fireSpell(vel);
+				//impactCheckCalled = true;
+
 
 			}
 		}
@@ -114,7 +131,7 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 
 
 	if (playerNum == 1){
-		if (spellPos.x > 640) {
+		if (spellPos.x > 640 || impactComplete) {
 			clearSpell();
 			//spellExists = false;
 			//spellFired = false;
@@ -137,7 +154,7 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 		//spellCreateDelay = ofGetElapsedTimef() +0.3;
 		motionEnergy = 0;
 
-		cout << "P1 Spell Called" << endl;
+		//cout << "P1 Spell Called" << endl;
 
 	}
 
@@ -149,7 +166,7 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 			fCrackle.play();
 			spellCalled = false;
 
-			cout << "P1 Spell Exists" << endl;
+			//cout << "P1 Spell Exists" << endl;
 
 		}
 	}
@@ -167,6 +184,7 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 	if (spellExists && !spellFired){
 		newFireCanBeCalled = false;
 		spellCanBeFired = true;
+		//impact = false;
 	}
 
 
@@ -176,30 +194,48 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 
 	//if (spellExists){
 	if (spellFired){
-		vel*=1.2;
+		if (!impact){
+			vel*=1.2;
 
-		if (playerNum == 1){
-			spellPos.x += vel;
-			if (spellPos.x > 320){
-				impactCheckCalled = true;
+			if (playerNum == 1){
+				spellPos.x += vel;
+
+			} else if (playerNum == 2){
+				//vel *= -1;
+				spellPos.x -= vel;
 			}
-		} else if (playerNum == 2){
-			spellPos.x -= vel;
-			if (spellPos.x < 320){
-				impactCheckCalled = true;
-			}
-		}
+			//spellPos.x+=vel;
 
-
+		} else if (impact) {
+			vel = 0;
+			spellPos = spellPos;
+		} 
+	//} else if (spellExists && !spellFired && !impact) {
+	//	spellPos = ofVec3f(lHand + (rHand-lHand)*0.5);
+		//cout << rHand.x << endl;
 	} else {
 		spellPos = ofVec3f(lHand + (rHand-lHand)*0.5);
-		//cout << rHand.x << endl;
 	}
+
+	//cout << "SPELLPOS: " << spellPos << endl;
+
 
 	if (impact){
-		clearSpell();
+		//ofDegtoRad(180)
+		if (impactCounter < PI){
+			impactCounter += PI/ofGetFrameRate();
+			//cout << "Impact counter: " << impactCounter << endl;
+			impactSize = sin(impactCounter);//*powerAtImpact;
+			impactSize = ofMap(impactSize,0,1,10,1-powerAtImpact);
+			//impactSize = 1-impactSize;
+			//impactSize*=10;
+			cout << "Impact size: " << impactSize << endl;
+		} else {
+			impactSize = 0;
+			clearSpell();
+			impact = false;
+		}
 	}
-
 
 	//} 
 
@@ -218,7 +254,9 @@ void Player::fireSpell(float startVel){
 	spellFired = true;
 	fCrackle.stop();
 	playSound = true;
+	impactCheckCalled = true;
 	spellCanBeFired = false;
+
 	cout << "fireSpell completed" << endl;
 }
 
@@ -227,18 +265,28 @@ void Player::fireSpell(float startVel){
 void Player::clearSpell(){
 	spellExists = false;
 	spellFired = false;
-	impactCheckCalled = false;
+	//impactCheckCalled = false;
 }
 
 //--------------------------------------------------------------
 
 void Player::playBoom(){
-	boom.setVolume(ofMap(spellIntensity,0.0,1.0,0.1,1.0));
+	boom.setVolume(ofMap(spellIntensity,0.0,1.0,0.5,2.0));
 	boom.setSpeed(ofMap(spellIntensity,0.0,1.0,0.3,1.0));
 	boom.setPan(spellPan);
 	boom.play();
 }
 
+//--------------------------------------------------------------
+
+void Player::startImpact(){
+	playBoom();
+	// = false;
+	powerAtImpact = spellIntensity;
+	impactCounter = 0;
+	impact = true;
+	impactCheckCalled = false;
+}
 
 //--------------------------------------------------------------
 ofVec3f Player::getSpellPos(){
