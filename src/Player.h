@@ -9,14 +9,14 @@ public:
 
 	void setup(int _playerNum, int _pIndex);
 	void updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, ofVec3f *_rWrist, ofVec3f *_lElbow, ofVec3f *_rElbow, ofVec3f *_lFoot, ofVec3f *_rFoot);
-void fireSpell(float startVel);
+	void fireSpell();
 	void clearSpell();
 	void draw();
 	void playBoom();
 	void startImpact();
 
 	ofVec3f getSpellPos();
-	
+
 	int doesSpellExist();
 
 	int playerNum, pIndex;
@@ -35,7 +35,7 @@ void fireSpell(float startVel);
 	//spell creation logic
 	bool spellFired;
 	bool spellCalled, spellExists, newFireCanBeCalled, spellCanBeFired, impactCheckCalled;
-//	bool startImpact;
+	//	bool startImpact;
 	bool impact, impactComplete;
 	float spellCreateDelay;
 

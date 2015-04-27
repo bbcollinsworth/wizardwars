@@ -270,12 +270,12 @@ void testApp::update()
 //--------------------------------------------------------------
 void testApp::draw(){
 
-	if (player1Exists && player1->impactCheckCalled){// && player1->spellPos.x > 320){
+	if (player1Exists && player1->spellState == 4){ //impactCheckCalled){// && player1->spellPos.x > 320){
 		impactCheck(1);
 		ofDrawBitmapString("P1 CHECKING IMPACT", ofGetWidth()*0.25, 100);
 	}
 
-	if (player2Exists && player2->impactCheckCalled){// && player1->spellPos.x > 320){
+	if (player2Exists && player2->spellState == 4){//impactCheckCalled){// && player1->spellPos.x > 320){
 		impactCheck(2);
 		ofDrawBitmapString("P1 CHECKING IMPACT", ofGetWidth()*0.25, 100);
 	}
@@ -299,7 +299,7 @@ void testApp::draw(){
 		shader.setUniform3f("p1SpellPoint", 1.0 + (player1->spellPos.x/-320.0), 1.0 + (player1->spellPos.y/-240.0), 0);
 		shader.setUniform1f("p1Intensity", player1->spellIntensity);
 
-		if (player1->spellExists && player1->impact == false){
+		if (player1->spellState > 2 && player1->spellState < 5){
 
 			//cout << "Shader Knows Player 1 spell called" << endl;
 			//if (spellType == "flame"){
@@ -310,7 +310,7 @@ void testApp::draw(){
 			shader.setUniform1i("p1SpellType", 0);
 		}
 
-		if (player1->impact){
+		if (player1->spellState == 5){
 			shader.setUniform1f("p1Impact", player1->impactSize);
 		} else {
 			shader.setUniform1f("p1Impact", 0);
@@ -330,7 +330,7 @@ void testApp::draw(){
 		shader.setUniform3f("p2SpellPoint", 1.0 + (player2->spellPos.x/-320.0), 1.0 + (player2->spellPos.y/-240.0), 0);
 		shader.setUniform1f("p2Intensity", player2->spellIntensity);
 
-		if (player2->spellExists && player2->impact == false){
+		if (player2->spellState > 2 && player2->spellState < 5){
 			//if (spellType == "flame"){
 			//set and pass a number for each spell type
 			shader.setUniform1i("p2SpellType", 1);
@@ -338,7 +338,7 @@ void testApp::draw(){
 			shader.setUniform1i("p2SpellType", 0);
 		}
 
-		if (player2->impact){
+		if (player2->spellState == 5){
 			shader.setUniform1f("p2Impact", player2->impactSize);
 		} else {
 			shader.setUniform1f("p2Impact", 0);
