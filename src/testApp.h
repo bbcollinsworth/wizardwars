@@ -44,7 +44,7 @@ class testApp : public ofBaseApp{
 
 		ofVec3f head1, lHand1, rHand1, lWrist1, rWrist1, lElbow1, rElbow1, lFoot1, rFoot1;
 		ofVec3f head2, lHand2, rHand2, lWrist2, rWrist2, lElbow2, rElbow2, lFoot2, rFoot2; 
-		ofVec3f prevLHand, prevRHand;
+		//ofVec3f prevLHand, prevRHand;
 		bool hasSkeleton;
 
 		float jointDistance;
@@ -66,10 +66,10 @@ class testApp : public ofBaseApp{
 
 		bool firstPress;
 
-		vector <Flame *> flames;
+		//vector <Flame *> flames;
 
 		//vector <float *> motion;
-		vector <float> motion;
+		//vector <float> motion;
 
 		ofSoundPlayer fCrackle;
 		ofSoundPlayer fWhoosh;

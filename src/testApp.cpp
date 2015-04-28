@@ -16,7 +16,7 @@ void testApp::setup(){
 	//kinect.initDepthStream(320, 240, true); //could I just change this to 640,480?
 	kinect.initDepthStream(640, 480, true); //could I just change this to 640,480?
 	kinect.initSkeletonStream(false);
-	kinect.setDepthClipping(1300.0F,2100.0F);
+	kinect.setDepthClipping(1500.0F,2300.0F);
 
 	kinect.start();
 
@@ -96,6 +96,26 @@ void testApp::setup(){
 	lWristAdj = lHandAdj;
 	rWristAdj = rHandAdj;
 
+	/*head1 = &ofVec3f(0,0,0);
+	lHand1 = &ofVec3f(0,0,0);
+	rHand1 = &ofVec3f(0,0,0);
+	lWrist1 = &ofVec3f(0,0,0);
+	rWrist1 = &ofVec3f(0,0,0);
+	lElbow1 = &ofVec3f(0,0,0);
+	rElbow1 = &ofVec3f(0,0,0);
+	lFoot1 = &ofVec3f(0,0,0);
+	rFoot1 = &ofVec3f(0,0,0);
+
+	head2 = &ofVec3f(0,0,0);
+	lHand2 = &ofVec3f(0,0,0);
+	rHand2 = &ofVec3f(0,0,0);
+	lWrist2 = &ofVec3f(0,0,0);
+	rWrist2 = &ofVec3f(0,0,0);
+	lElbow2 = &ofVec3f(0,0,0);
+	rElbow2 = &ofVec3f(0,0,0);
+	lFoot2 = &ofVec3f(0,0,0);
+	rFoot2 = &ofVec3f(0,0,0);*/
+
 
 	gui.setup();
 	gui.add(p1.setup("head", 0.0, -1.0, 1.0));
@@ -118,12 +138,12 @@ void testApp::update()
 	//cout << d.size() << endl;
 
 
-	if(kinect.isNewSkeleton()) {
+	//if(kinect.isNewSkeleton()) {
 
-		//motionEnergy*= 0.95;
-	} else {
-		motionEnergy = 0;
-	}
+	//	//motionEnergy*= 0.95;
+	//} else {
+	//	motionEnergy = 0;
+	//}
 
 	if(kinect.isNewSkeleton()) {
 
@@ -161,6 +181,8 @@ void testApp::update()
 
 		int p1index = -1;
 
+		int skelCounter = 0;
+
 		if (player1Exists){
 
 			for( int i = 0; i < kinect.getSkeletons().size(); i++) 
@@ -190,11 +212,15 @@ void testApp::update()
 					lFoot1 = getBone(lFootBone,lFoot1);
 					rFoot1 = getBone(rFootBone,rFoot1);
 
-					//cout << "p1 Left Foot: " << lFoot1 << endl;
+					cout << "p1 Left Foot: " << lFoot1 << endl;
 
 					player1->updateSkeleton(&lHand1,&rHand1,&lWrist1,&rWrist1,&lElbow1,&rElbow1);		
 
 					p1index = i;
+
+					skelCounter++;
+					cout << "skeleton p1 setup has run " << skelCounter << " times." << endl;
+					break;
 
 				}
 				cout << "skeleton p1 check has run " << i << " times." << endl;
@@ -232,7 +258,7 @@ void testApp::update()
 					lFoot2 = getBone(lFootBone,lFoot2);
 					rFoot2 = getBone(rFootBone,rFoot2);
 
-					//cout << "p2 Left Foot: " << lFoot2 << endl;
+					cout << "p2 Left Foot: " << lFoot2 << endl;
 
 					player2->updateSkeleton(&lHand2,&rHand2,&lWrist2,&rWrist2,&lElbow2,&rElbow2);
 					//cout << "Player2 updated - elbow is:" << lElbow2.x << "," << lElbow2.y << endl;
@@ -431,6 +457,7 @@ ofVec3f testApp::getBone(SkeletonBone bone, ofVec3f bodyPart){
 	ofVec3f tempBone( bone.getScreenPosition().x, bone.getScreenPosition().y, 0);
 	//cout << bodyPart << endl;
 	//cout << tempBone.x << ", " << tempBone.y << endl;
+	//ofVec3f tempBodyPart = *bodyPart;
 	bodyPart = bodyPart.getInterpolated(tempBone, 0.5);
 	return bodyPart;
 }
@@ -439,7 +466,7 @@ ofVec3f testApp::getBone(SkeletonBone bone, ofVec3f bodyPart){
 
 void testApp::drawHealthBar(Player* p, int _pNum){
 	int scale = 4;
-	
+
 	float healthBarX = p->startHealth*-0.5;
 	healthBarX*= scale;
 	if (_pNum == 1){
@@ -447,7 +474,7 @@ void testApp::drawHealthBar(Player* p, int _pNum){
 	} else if (_pNum == 2){
 		healthBarX += ofGetWidth()*0.75;
 	}
-	
+
 	float healthBarW = (p->health)*scale;
 
 	ofRect(healthBarX,70,healthBarW,20);
@@ -539,6 +566,10 @@ void testApp::keyPressed(int key){
 		string frameCount = ofToString(20000+ofGetFrameNum());
 		string fileName = "Images/" + frameCount + ".jpg";
 		ofSaveScreen(fileName);
+	}
+
+	if (key == 'r'){
+		shader.load("shaders/blobs.vs", "shaders/frag_with_impact.fs");
 	}
 }
 
