@@ -15,6 +15,8 @@ class testApp : public ofBaseApp{
 		void setSpellPosition(ofVec3f *pos);
 		ofVec3f getBone(SkeletonBone bone, ofVec3f bodyPart);
 		void impactCheck(int _pNum);
+		void drawHealthBar(Player* p, int _pNum);
+		void gameOverCheck();
 		
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -34,6 +36,9 @@ class testApp : public ofBaseApp{
 		Player * player2;
 		bool player1Exists, player2Exists;
 		bool p1Updated, p2Updated;
+
+		bool gameOver;
+		int winner;
 
 		float xResolution, yResolution;
 

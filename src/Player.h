@@ -8,12 +8,13 @@ public:
 	Player(void);
 
 	void setup(int _playerNum, int _pIndex);
-	void updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, ofVec3f *_rWrist, ofVec3f *_lElbow, ofVec3f *_rElbow, ofVec3f *_lFoot, ofVec3f *_rFoot);
+	void updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, ofVec3f *_rWrist, ofVec3f *_lElbow, ofVec3f *_rElbow);
 	void fireSpell();
 	void clearSpell();
 	void draw();
 	void playBoom();
-	void startImpact();
+	void startImpact(float* _spellPosX);
+	void damage(float dmg);
 
 	ofVec3f getSpellPos();
 
@@ -40,6 +41,10 @@ public:
 	float spellCreateDelay;
 
 	float vel;
+	float startVel;
+
+	float health;
+	float startHealth;
 
 	float impactCounter, impactSize;
 	float powerAtImpact;
