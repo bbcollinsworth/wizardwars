@@ -10,15 +10,15 @@ void testApp::setup(){
 	//KINECT SETUP + INITIALIZATION
 	//==========================
 
-	//kResX = 320;
-	//kResY = 240;
-	kResX = 640;
-	kResY = 480;
+	kResX = 320;
+	kResY = 240;
+	//kResX = 640;
+	//kResY = 480;
 
 	kinect.initSensor( 0 );
 
-	kinect.initColorStream(kResX, kResY);
-	//kinect.initDepthStream(kResX, kResY, true); //could I just change this to 640,480?
+	//kinect.initColorStream(kResX, kResY);
+	kinect.initDepthStream(kResX, kResY, true); //could I just change this to 640,480?
 	//kinect.initDepthStream(640, 480, true); //could I just change this to 640,480?
 	kinect.initSkeletonStream(false);
 	kinect.setDepthClipping(1400.0F,2200.0F);
@@ -54,7 +54,7 @@ void testApp::setup(){
 	plane.mapTexCoords(0, 0, xResolution, yResolution);
 
 
-	gameFont.loadFont("fonts/Glastonbury.ttf", 48, true, true);
+	gameFont.loadFont("fonts/Glastonbury.ttf", 60, true, true);
 	gameFont.setLineHeight(18.0f);
 
 	//==========================
@@ -311,8 +311,8 @@ void testApp::draw(){
 		shader.setUniform1f("time", ofGetElapsedTimef());///2.0);
 		shader.setUniform2f("resolution", xResolution, yResolution);
 		shader.setUniform2f("kRes", kResX, kResY);
-		shader.setUniformTexture("videoTex", kinect.getColorTexture(), 0);
-		//shader.setUniformTexture("videoTex", kinect.getDepthTexture(), 0);
+		//shader.setUniformTexture("videoTex", kinect.getColorTexture(), 0);
+		shader.setUniformTexture("videoTex", kinect.getDepthTexture(), 0);
 
 		//if(hasSkeleton)
 		if (player1Exists)

@@ -88,6 +88,9 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 		motionEnergy = 0;
 		spellIntensity = 0;
 		spellPos = ofVec3f(lHand + (rHand-lHand)*0.5);
+		//CLEARS PREVSPELLPOS
+		//prevSpellPos = ofVec3f(lHand + (rHand-lHand)*0.5);
+		spellPrevs.clear();
 
 		if (lHand.x < rHand.x - 30) {
 			spellState = 1; //spell can be called
@@ -122,7 +125,7 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 
 	if (spellState == 3){
 		//cout << "Can be Fired is true" << endl;//cout << "PlayerNum: " << playerNum << endl;
-		spellPos = ofVec3f(lHand + (rHand-lHand)*0.5);
+		//spellPos = ofVec3f(lHand + (rHand-lHand)*0.5);
 
 		float lDistMoved = lHand.squareDistance(prevLHand);
 		float rDistMoved = rHand.squareDistance(prevRHand);
@@ -160,6 +163,11 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 		fireSpell();
 		}
 		}*/
+	}
+
+	//==========SET PRE-FIRE SPELLPOS==================
+	if (spellState < 4){
+		spellPos = ofVec3f(lHand + (rHand-lHand)*0.5);
 	}
 
 	//==========SPELL FIRED==================
@@ -252,10 +260,13 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 	}
 
 	spellPrevs.push_back(spellPos);
-	if (spellPrevs.size() > 10){
+	if (spellPrevs.size() > ofGetFrameRate()*0.25){
 		spellPrevs.erase(spellPrevs.begin());
 	}
-	prevSpellPos = spellPrevs[0];
+
+	//if (spellState > 2){
+		prevSpellPos = spellPrevs[0];
+	//}
 
 }
 
