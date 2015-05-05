@@ -7,8 +7,8 @@ class Player
 public:
 	Player(void);
 
-	void setup(int _playerNum, int _pIndex);
-	void updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, ofVec3f *_rWrist, ofVec3f *_lElbow, ofVec3f *_rElbow);
+	void setup(int _playerNum, int _pIndex, float *_kResX);
+	void updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, ofVec3f *_rWrist, ofVec3f *_lElbow, ofVec3f *_rElbow);
 	void fireSpell();
 	void clearSpell();
 	void draw();
@@ -18,7 +18,7 @@ public:
 
 	ofVec3f getSpellPos();
 
-	int doesSpellExist();
+	float kResX;
 
 	int playerNum, pIndex;
 
@@ -27,7 +27,7 @@ public:
 	ofVec3f prevLHand, prevRHand;
 	bool hasSkeleton;
 
-	ofVec3f spellPos;
+	ofVec3f spellPos, prevSpellPos;
 	float motionEnergy;
 	float spellIntensity;
 
@@ -40,6 +40,12 @@ public:
 	bool impact, impactComplete;
 	float spellCreateDelay;
 
+
+	float prevLBehindHeadMax;
+	float prevRBehindHeadMax;
+	int throwTimer;
+	int throwTimerMax;
+
 	float vel;
 	float startVel;
 
@@ -49,6 +55,7 @@ public:
 	float impactCounter, impactSize;
 	float powerAtImpact;
 
+	vector <ofVec3f> spellPrevs;
 
 	bool playSound;
 	ofSoundPlayer fCrackle;

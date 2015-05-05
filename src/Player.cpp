@@ -7,10 +7,13 @@ Player::Player(void)
 }
 
 //--------------------------------------------------------------
-void Player::setup(int _playerNum, int _pIndex){
+void Player::setup(int _playerNum, int _pIndex, float *_kResX){
 
 	playerNum = _playerNum;
 	pIndex = _pIndex;
+
+	kResX = 640;
+	//kResX*=2;
 
 	startVel = 7;
 	//vel = 5;
@@ -32,7 +35,7 @@ void Player::setup(int _playerNum, int _pIndex){
 	newFireCanBeCalled = true;
 
 	spellState = 0;
-	startHealth = 30;
+	startHealth = 20;
 	health = startHealth;
 
 	spellFired = false;
@@ -42,13 +45,18 @@ void Player::setup(int _playerNum, int _pIndex){
 
 	impactCounter = 0;
 
+	prevLBehindHeadMax = 0;
+	float prevRBehindHeadMax = 0;
+	throwTimerMax = 60;
+	throwTimer = throwTimerMax;
+
 	playSound = false;
 }
 
 //--------------------------------------------------------------
-void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, ofVec3f *_rWrist, ofVec3f *_lElbow, ofVec3f *_rElbow){
+void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, ofVec3f *_rWrist, ofVec3f *_lElbow, ofVec3f *_rElbow){
 
-	//head = *_head;
+	head = *_head;
 	lHand = *_lHand; // will these work as local variables?
 	rHand = *_rHand;
 	lWrist = *_lWrist;
@@ -102,7 +110,7 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 
 	if (spellState == 2){
 
-		if (rHand.x - lHand.x > 5) {	
+		if (rHand.x - lHand.x > 10) {	
 			fWhoosh.play();
 			fCrackle.play();
 			spellState = 3; //spell exists
@@ -129,15 +137,29 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 
 		spellIntensity = ofMap(motionEnergy,0,6000,0.0,1.0,true);
 
-		if (playerNum == 1){
-			if (handSpacing < 50 && lWrist.x > lElbow.x+20 && rWrist.x > rElbow.x+20 && abs(lWrist.y - rWrist.y) < 50){
-				fireSpell();
-			}
-		} else if (playerNum == 2){
-			if (handSpacing < 50 && lWrist.x < lElbow.x-20 && rWrist.x < rElbow.x-20 && abs(lWrist.y - rWrist.y) < 50){
-				fireSpell();
+
+		if (prevLBehindHeadMax < -10 && prevRBehindHeadMax < -10){
+			if (playerNum == 1){
+				if (lHand.x - head.x > abs((lHand.y - head.y)*0.5) && rHand.x - head.x > abs((rHand.y - head.y)*0.5)) { 
+
+					fireSpell();
+				}
+			} else if (playerNum == 2){
+				if (head.x - lHand.x > abs((lHand.y - head.y)*0.5) && head.x - rHand.x > abs((rHand.y - head.y)*0.5)) { 
+
+					fireSpell();
+				}
 			}
 		}
+
+		//if (handSpacing < 50 && lWrist.x > lElbow.x+20 && rWrist.x > rElbow.x+20 && abs(lWrist.y - rWrist.y) < 50){
+		//	fireSpell();
+		//}
+		/*} else if (playerNum == 2){
+		if (handSpacing < 50 && lWrist.x < lElbow.x-20 && rWrist.x < rElbow.x-20 && abs(lWrist.y - rWrist.y) < 50){
+		fireSpell();
+		}
+		}*/
 	}
 
 	//==========SPELL FIRED==================
@@ -150,7 +172,7 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 
 		if (playerNum == 1){
 			spellPos.x += vel;
-			if (spellPos.x > 640) {
+			if (spellPos.x > kResX) {
 				spellState = 0;
 			}
 
@@ -184,7 +206,7 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 
 	//==========SOUND ADJUSTMENTS==================
 
-	spellPan = ofMap(spellPos.x,0,640,-1.0,1.0);
+	spellPan = ofMap(spellPos.x,0,kResX,-1.0,1.0);
 
 	if (fCrackle.getIsPlaying()){
 		fCrackle.setVolume(ofMap(spellIntensity,0.0,1.0,0.1,1.0));
@@ -200,6 +222,40 @@ void Player::updateSkeleton(ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, 
 
 	prevLHand = lHand;
 	prevRHand = rHand;
+
+	//NEED TO CLEAR WHEN SPELL THROWN
+
+	float lHandFromHead;
+	float rHandFromHead;
+
+	if (playerNum == 1){
+		lHandFromHead = lHand.x - head.x;
+		rHandFromHead = rHand.x - head.x; 
+	}
+
+	if (playerNum == 2){
+		lHandFromHead = head.x - lHand.x;
+		rHandFromHead = head.x - rHand.x;
+	}
+
+	if (lHandFromHead < prevLBehindHeadMax && rHandFromHead < prevRBehindHeadMax) {
+		prevLBehindHeadMax = lHandFromHead;
+		prevRBehindHeadMax = rHandFromHead;
+		throwTimer = throwTimerMax;
+	}
+
+	throwTimer--;
+
+	if (throwTimer <= 0 || spellState != 3){
+		prevLBehindHeadMax = 0;
+		prevRBehindHeadMax = 0;
+	}
+
+	spellPrevs.push_back(spellPos);
+	if (spellPrevs.size() > 10){
+		spellPrevs.erase(spellPrevs.begin());
+	}
+	prevSpellPos = spellPrevs[0];
 
 }
 
@@ -253,15 +309,6 @@ void Player::damage(float dmg){
 //--------------------------------------------------------------
 ofVec3f Player::getSpellPos(){
 	return spellPos;
-}
-
-//--------------------------------------------------------------
-int Player::doesSpellExist(){
-	if (spellExists){
-		return 1;
-	} else {
-		return 0;
-	}
 }
 
 //--------------------------------------------------------------

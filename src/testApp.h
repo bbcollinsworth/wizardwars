@@ -37,14 +37,15 @@ class testApp : public ofBaseApp{
 		bool player1Exists, player2Exists;
 		bool p1Updated, p2Updated;
 
-		bool gameOver;
+		bool gameStarted, gameOver;
 		int winner;
 
-		float xResolution, yResolution;
+		ofTrueTypeFont gameFont;
+
+		float xResolution, yResolution, kResX, kResY;
 
 		ofVec3f head1, lHand1, rHand1, lWrist1, rWrist1, lElbow1, rElbow1, lFoot1, rFoot1;
-		ofVec3f head2, lHand2, rHand2, lWrist2, rWrist2, lElbow2, rElbow2, lFoot2, rFoot2; 
-		//ofVec3f prevLHand, prevRHand;
+		ofVec3f head2, lHand2, rHand2, lWrist2, rWrist2, lElbow2, rElbow2, lFoot2, rFoot2;
 		bool hasSkeleton;
 
 		float jointDistance;
@@ -57,7 +58,6 @@ class testApp : public ofBaseApp{
 
 		//spell creation logic
 		bool spellFired;
-		//bool spellCalled, spellExists, newFireCanBeCalled, spellCanBeFired;
 		float spellCreateDelay;
 
 		ofVec3f mousePos;
@@ -70,9 +70,6 @@ class testApp : public ofBaseApp{
 
 		//vector <float *> motion;
 		//vector <float> motion;
-
-		ofSoundPlayer fCrackle;
-		ofSoundPlayer fWhoosh;
 
 		bool playSound;
 

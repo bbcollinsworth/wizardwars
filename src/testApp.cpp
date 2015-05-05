@@ -4,19 +4,24 @@
 
 void testApp::setup(){
 
-	//ofSetFrameRate(30);
+	ofSetFrameRate(24);
 
 	//==========================
 	//KINECT SETUP + INITIALIZATION
 	//==========================
 
+	//kResX = 320;
+	//kResY = 240;
+	kResX = 640;
+	kResY = 480;
+
 	kinect.initSensor( 0 );
 
-	//kinect.initColorStream(640, 480);
-	//kinect.initDepthStream(320, 240, true); //could I just change this to 640,480?
-	kinect.initDepthStream(640, 480, true); //could I just change this to 640,480?
+	kinect.initColorStream(kResX, kResY);
+	//kinect.initDepthStream(kResX, kResY, true); //could I just change this to 640,480?
+	//kinect.initDepthStream(640, 480, true); //could I just change this to 640,480?
 	kinect.initSkeletonStream(false);
-	kinect.setDepthClipping(1500.0F,2300.0F);
+	kinect.setDepthClipping(1400.0F,2200.0F);
 
 	kinect.start();
 
@@ -25,12 +30,8 @@ void testApp::setup(){
 	//GL + SHADER SETUP
 	//==========================
 
-	//xResolution = 1024;
-	//yResolution = 768;
 	xResolution = 1500;
-	yResolution = 480*xResolution/640;
-	//xResolution = 1600;
-	//yResolution = 480*xResolution/640;
+	yResolution = kResY*xResolution/kResX;
 
 	//ofToggleFullscreen();
 
@@ -53,6 +54,9 @@ void testApp::setup(){
 	plane.mapTexCoords(0, 0, xResolution, yResolution);
 
 
+	gameFont.loadFont("fonts/Glastonbury.ttf", 48, true, true);
+	gameFont.setLineHeight(18.0f);
+
 	//==========================
 	//BOOLEAN INITIALIZATIONS
 	//==========================
@@ -62,14 +66,6 @@ void testApp::setup(){
 	gameOver = false;
 	winner = 0;
 
-	/*firstPress = false;
-	spellCalled = false;
-	spellExists = false;
-	newFireCanBeCalled = true;
-
-	spellFired = false;
-	spellCanBeFired = false;*/
-
 	playSound = false;
 
 	player1Exists = false;
@@ -77,17 +73,6 @@ void testApp::setup(){
 	p1Updated = false;
 	p2Updated = false;
 
-	//=========================
-	//SOUND SETUP
-	//==========================
-
-	/*fWhoosh.loadSound("sounds/fire_whoosh.wav");
-	fWhoosh.setVolume(0.75);
-	fWhoosh.setMultiPlay(true);
-
-	fCrackle.loadSound("sounds/fire_crackle.wav");
-	fCrackle.setVolume(0.2);
-	fCrackle.setMultiPlay(true);*/
 
 	//==========================
 
@@ -116,14 +101,6 @@ void testApp::setup(){
 	lFoot2 = &ofVec3f(0,0,0);
 	rFoot2 = &ofVec3f(0,0,0);*/
 
-
-	gui.setup();
-	gui.add(p1.setup("head", 0.0, -1.0, 1.0));
-	gui.add(p2.setup("leftHand", 0.0, -1.0, 1.0));
-	gui.add(p3.setup("rightHand", 0.0, -1.0, 1.0));
-	gui.add(p4.setup("blobDensity", 0.8, 0.0, 2.0));
-	gui.add(p5.setup("frequency", 0.18, 0.0, 2.0));
-	gui.add(p6.setup("scalar", 2.5, -1.0, 3.0));
 
 	jointDistance = 1.f;
 
@@ -162,7 +139,7 @@ void testApp::update()
 
 					if (!player1Exists){
 						player1 = new Player();
-						player1->setup(1,i);
+						player1->setup(1,i,&kResX);
 						player1Exists = true;
 						cout << "PLAYER 1 set up at Index: " << i << endl; 
 					}
@@ -170,7 +147,7 @@ void testApp::update()
 					if (!player2Exists && player1Exists){
 						if (i != player1->pIndex){
 							player2 = new Player();
-							player2->setup(2,i);
+							player2->setup(2,i,&kResX);
 							player2Exists = true;
 							cout << "PLAYER 2 set up at Index: " << i << endl; 
 						}
@@ -192,7 +169,17 @@ void testApp::update()
 					&& kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second.getScreenPosition().x < 320 )
 				{
 
-					SkeletonBone headBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second;
+					head1 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second.getScreenPosition();
+					lHand1 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_LEFT)->second.getScreenPosition();
+					rHand1 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_RIGHT)->second.getScreenPosition();
+					lWrist1 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_LEFT)->second.getScreenPosition();
+					rWrist1 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_RIGHT)->second.getScreenPosition();
+					lElbow1 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_LEFT)->second.getScreenPosition();
+					rElbow1 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_RIGHT)->second.getScreenPosition();
+					lFoot1 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_LEFT)->second.getScreenPosition();
+					rFoot1 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_RIGHT)->second.getScreenPosition();
+
+					/*SkeletonBone headBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second;
 					SkeletonBone lHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_LEFT)->second;
 					SkeletonBone rHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_RIGHT)->second;
 					SkeletonBone lWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_LEFT)->second;
@@ -202,19 +189,19 @@ void testApp::update()
 					SkeletonBone lFootBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_LEFT)->second;
 					SkeletonBone rFootBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_RIGHT)->second;
 
-					head1 = getBone(headBone,head1);
-					lHand1 = getBone(lHandBone,lHand1);
-					rHand1 = getBone(rHandBone,rHand1);
-					lWrist1 = getBone(lWristBone,lWrist1);
-					rWrist1 = getBone(rWristBone,rWrist1);
-					lElbow1 = getBone(lElbowBone,lElbow1);
-					rElbow1 = getBone(rElbowBone,rElbow1);
-					lFoot1 = getBone(lFootBone,lFoot1);
-					rFoot1 = getBone(rFootBone,rFoot1);
+					head1 = headBone.getScreenPosition();
+					lHand1 = lHandBone.getScreenPosition();
+					rHand1 = rHandBone.getScreenPosition();
+					lWrist1 = lWristBone.getScreenPosition();
+					rWrist1 = rWristBone.getScreenPosition();
+					lElbow1 = lElbowBone.getScreenPosition();
+					rElbow1 = rElbowBone.getScreenPosition();
+					lFoot1 = lFootBone.getScreenPosition();
+					rFoot1 = rFootBone.getScreenPosition();*/
 
 					cout << "p1 Left Foot: " << lFoot1 << endl;
 
-					player1->updateSkeleton(&lHand1,&rHand1,&lWrist1,&rWrist1,&lElbow1,&rElbow1);		
+					player1->updateSkeleton(&head1,&lHand1,&rHand1,&lWrist1,&rWrist1,&lElbow1,&rElbow1);		
 
 					p1index = i;
 
@@ -237,8 +224,17 @@ void testApp::update()
 					&& kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second.getScreenPosition().x >= 320 && i!=p1index)
 				{
 
+					head2 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second.getScreenPosition();
+					lHand2 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_LEFT)->second.getScreenPosition();
+					rHand2 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_RIGHT)->second.getScreenPosition();
+					lWrist2 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_LEFT)->second.getScreenPosition();
+					rWrist2 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_RIGHT)->second.getScreenPosition();
+					lElbow2 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_LEFT)->second.getScreenPosition();
+					rElbow2 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_RIGHT)->second.getScreenPosition();
+					lFoot2 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_LEFT)->second.getScreenPosition();
+					rFoot2 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_RIGHT)->second.getScreenPosition();
 
-					SkeletonBone headBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second;
+					/*SkeletonBone headBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second;
 					SkeletonBone lHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_LEFT)->second;
 					SkeletonBone rHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_RIGHT)->second;
 					SkeletonBone lWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_LEFT)->second;
@@ -248,7 +244,17 @@ void testApp::update()
 					SkeletonBone lFootBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_LEFT)->second;
 					SkeletonBone rFootBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_RIGHT)->second;
 
-					head2 = getBone(headBone,head2);
+					head2 = headBone.getScreenPosition();
+					lHand2 = lHandBone.getScreenPosition();
+					rHand2 = rHandBone.getScreenPosition();
+					lWrist2 = lWristBone.getScreenPosition();
+					rWrist2 = rWristBone.getScreenPosition();
+					lElbow2 = lElbowBone.getScreenPosition();
+					rElbow2 = rElbowBone.getScreenPosition();
+					lFoot2 = lFootBone.getScreenPosition();
+					rFoot2 = rFootBone.getScreenPosition();*/
+
+					/*head2 = getBone(headBone,head2);
 					lHand2 = getBone(lHandBone,lHand2);
 					rHand2 = getBone(rHandBone,rHand2);
 					lWrist2 = getBone(lWristBone,lWrist2);
@@ -256,11 +262,11 @@ void testApp::update()
 					lElbow2 = getBone(lElbowBone,lElbow2);
 					rElbow2 = getBone(rElbowBone,rElbow2);
 					lFoot2 = getBone(lFootBone,lFoot2);
-					rFoot2 = getBone(rFootBone,rFoot2);
+					rFoot2 = getBone(rFootBone,rFoot2);*/
 
 					cout << "p2 Left Foot: " << lFoot2 << endl;
 
-					player2->updateSkeleton(&lHand2,&rHand2,&lWrist2,&rWrist2,&lElbow2,&rElbow2);
+					player2->updateSkeleton(&head2,&lHand2,&rHand2,&lWrist2,&rWrist2,&lElbow2,&rElbow2);
 					//cout << "Player2 updated - elbow is:" << lElbow2.x << "," << lElbow2.y << endl;
 					//p2Updated=true;
 
@@ -270,8 +276,6 @@ void testApp::update()
 			}
 		}
 	}
-
-
 
 	ofSoundUpdate();
 
@@ -301,21 +305,23 @@ void testApp::draw(){
 		ofDisableAlphaBlending();
 
 		ofPushMatrix();
-		//ofTranslate(512, 768/2);
 		ofTranslate(xResolution*0.5, yResolution*0.5);
 
 		shader.begin();
 		shader.setUniform1f("time", ofGetElapsedTimef());///2.0);
 		shader.setUniform2f("resolution", xResolution, yResolution);
-		//shader.setUniformTexture("videoTex", kinect.getColorTexture(), 0);
-		shader.setUniformTexture("videoTex", kinect.getDepthTexture(), 0);
+		shader.setUniform2f("kRes", kResX, kResY);
+		shader.setUniformTexture("videoTex", kinect.getColorTexture(), 0);
+		//shader.setUniformTexture("videoTex", kinect.getDepthTexture(), 0);
 
 		//if(hasSkeleton)
 		if (player1Exists)
 		{
 
-			shader.setUniform3f("p1SpellPoint", 1.0 + (player1->spellPos.x/-320.0), 1.0 + (player1->spellPos.y/-240.0), 0);
+			shader.setUniform3f("p1SpellPoint", 1.0 + (player1->spellPos.x/(-320)), 1.0 + (player1->spellPos.y/(-240)), 0);
+			shader.setUniform3f("p1PrevSpell", 1.0 + (player1->prevSpellPos.x/(-320)), 1.0 + (player1->prevSpellPos.y/(-240)), 0);
 			shader.setUniform1f("p1Intensity", player1->spellIntensity);
+			shader.setUniform1f("p1Health", player1->health/30);
 
 			if (player1->spellState > 2 && player1->spellState < 5){
 
@@ -340,13 +346,16 @@ void testApp::draw(){
 			shader.setUniform1f("p1Intensity", 0.0);
 			shader.setUniform1i("p1SpellType", 0);
 			shader.setUniform1i("p1Impact", 0);
+			shader.setUniform1f("p1Health", 0);
 		}
 
 		if (player2Exists)
 		{
 
-			shader.setUniform3f("p2SpellPoint", 1.0 + (player2->spellPos.x/-320.0), 1.0 + (player2->spellPos.y/-240.0), 0);
+			shader.setUniform3f("p2SpellPoint", 1.0 + (player2->spellPos.x/(-320.0)), 1.0 + (player2->spellPos.y/(-240.0)), 0);
+			shader.setUniform3f("p2PrevSpell", 1.0 + (player2->prevSpellPos.x/(-320.0)), 1.0 + (player2->prevSpellPos.y/(-240.0)), 0);
 			shader.setUniform1f("p2Intensity", player2->spellIntensity);
+			shader.setUniform1f("p2Health", player2->health/30);
 
 			if (player2->spellState > 2 && player2->spellState < 5){
 				//if (spellType == "flame"){
@@ -369,6 +378,7 @@ void testApp::draw(){
 			shader.setUniform1f("p2Intensity", 0.0);
 			shader.setUniform1i("p2SpellType", 0);
 			shader.setUniform1i("p2Impact", 0);
+			shader.setUniform1f("p2Health", 0);
 		}
 
 		plane.draw();
@@ -390,10 +400,6 @@ void testApp::draw(){
 			ofSetColor(255,255,100);
 			ofDrawBitmapString("SKELETON 1 DETECTED", ofGetWidth()*0.25, 32);
 			drawHealthBar(player1, 1);
-			//float healthBarX = ofGetWidth()*0.25-45;
-			//float healthBarW = (player1->health)*3;
-			//ofRect(healthBarX,70,healthBarW,20);
-			//ofDrawBitmapString("P1 HEALTH: " + ofToString(player1->health), ofGetWidth()*0.25, 70);
 
 			if (player1->impactCheckCalled){
 				//ofDrawBitmapString("P1 IMPACT CHECK CALLED", ofGetWidth()*0.25, 100);
@@ -416,11 +422,6 @@ void testApp::draw(){
 
 			drawHealthBar(player2, 2);
 
-			//float healthBarX = ofGetWidth()*0.75-45;
-			//float healthBarW = (player2->health)*3;
-			//ofRect(healthBarX,70,healthBarW,20);
-			//ofDrawBitmapString("P2 HEALTH: " + ofToString(player2->health), ofGetWidth()*0.75, 70);
-
 			if (player2->impactCheckCalled){
 				//ofDrawBitmapString("P2 IMPACT CHECK CALLED", ofGetWidth()*0.75, 100);
 				//cout << "P2 SPELLPOS: " << player2->spellPos.x << endl;
@@ -430,7 +431,10 @@ void testApp::draw(){
 
 		float frameRate = ofGetFrameRate();
 
-		ofDrawBitmapString("FRAMERATE: " + ofToString(frameRate), ofGetWidth()*0.5, 32);
+		string framerateString = "FrameRate: " + ofToString(frameRate);
+		gameFont.drawString(framerateString, ofGetWidth()*0.5-(gameFont.stringWidth(framerateString)*0.5), 32);
+
+		//ofDrawBitmapString("FRAMERATE: " + ofToString(frameRate), ofGetWidth()*0.5, 32);
 
 
 		if(!hasSkeleton) 
@@ -442,10 +446,16 @@ void testApp::draw(){
 	} else {
 		ofBackground(0);
 		ofSetColor(255,255,0);
+
+		string winString = "Victory is Yours!";
 		if (winner == 1){
-			ofDrawBitmapString("PLAYER 1 WINS!", ofGetWidth()*0.5, ofGetHeight()*0.5);
+			float winTextX = ofGetWidth()*0.25-(gameFont.stringWidth(winString)*0.5);
+			gameFont.drawString(winString, winTextX, ofGetHeight()*0.5);
+			//ofDrawBitmapString("PLAYER 1 WINS!", ofGetWidth()*0.5, ofGetHeight()*0.5);
 		} else if (winner == 2){
-			ofDrawBitmapString("PLAYER 2 WINS!", ofGetWidth()*0.5, ofGetHeight()*0.5);
+			float winTextX = ofGetWidth()*0.75-(gameFont.stringWidth(winString)*0.5);
+			gameFont.drawString(winString, winTextX, ofGetHeight()*0.5);
+			//ofDrawBitmapString("PLAYER 2 WINS!", ofGetWidth()*0.5, ofGetHeight()*0.5);
 		}
 
 	}
@@ -555,7 +565,7 @@ void testApp::setSpellPosition(ofVec3f *pos){
 void testApp::keyPressed(int key){
 	if (key == 'f'){
 		xResolution = 1600;
-		yResolution = 480*xResolution/640;
+		yResolution = kResY*xResolution/kResX;
 		plane.set(xResolution, yResolution, 4, 4);
 		plane.setPosition(0, 0, 0);
 		plane.mapTexCoords(0, 0, xResolution, yResolution);
