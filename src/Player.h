@@ -7,8 +7,9 @@ class Player
 public:
 	Player(void);
 
-	void setup(int _playerNum, int _pIndex, float *_kResX);
+	void setup(int _playerNum, int _pIndex);
 	void updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, ofVec3f *_lWrist, ofVec3f *_rWrist, ofVec3f *_lElbow, ofVec3f *_rElbow);
+	void callSpell();
 	void fireSpell();
 	void clearSpell();
 	void draw();
@@ -19,6 +20,7 @@ public:
 	ofVec3f getSpellPos();
 
 	float kResX;
+	float kResY;
 
 	int playerNum, pIndex;
 
@@ -32,6 +34,8 @@ public:
 	float spellIntensity;
 
 	int spellState;
+
+	string spellType;
 
 	//spell creation logic
 	bool spellFired;
@@ -60,7 +64,11 @@ public:
 	bool playSound;
 	ofSoundPlayer fCrackle;
 	ofSoundPlayer fWhoosh;
+	ofSoundPlayer wWhoosh, wRunning;
 	ofSoundPlayer boom;
+
+	ofSoundPlayer* spellWhoosh;
+	ofSoundPlayer* spellNoise;
 	float spellPan;
 
 	~Player(void);

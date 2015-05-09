@@ -10,18 +10,26 @@ void testApp::setup(){
 	//KINECT SETUP + INITIALIZATION
 	//==========================
 
-	kResX = 320;
-	kResY = 240;
-	//kResX = 640;
-	//kResY = 480;
+	depth = false;
 
 	kinect.initSensor( 0 );
 
-	//kinect.initColorStream(kResX, kResY);
-	kinect.initDepthStream(kResX, kResY, true); //could I just change this to 640,480?
-	//kinect.initDepthStream(640, 480, true); //could I just change this to 640,480?
+	if (depth){
+		kResX = 320;
+		kResY = 240;
+		kinect.initDepthStream(kResX, kResY, true);
+		kinect.setDepthClipping(1400.0F,2200.0F);
+	} else {
+		kResX = 640;
+		kResY = 480;
+		kinect.initColorStream(kResX, kResY);
+	}
+
 	kinect.initSkeletonStream(false);
-	kinect.setDepthClipping(1400.0F,2200.0F);
+
+
+	//kinect.initDepthStream(kResX, kResY, true); //could I just change this to 640,480?
+	//kinect.initDepthStream(640, 480, true); //could I just change this to 640,480?
 
 	kinect.start();
 
@@ -37,7 +45,7 @@ void testApp::setup(){
 
 #ifdef USE_PROGRAMMABLE_RENDERER
 	//shader.load("shaders/blobs.vs", "shaders/blobs.fs");
-	shader.load("shaders/blobs.vs", "shaders/frag_with_impact.fs");
+	shader.load("shaders/blobs.vs", "shaders/frag_with_water.fs");
 	cout << "Shader in use is not gl2" << endl;
 #else
 	shader.load("shaders/blobs_gl2.vs", "shaders/blobs_gl2.fs");
@@ -52,7 +60,6 @@ void testApp::setup(){
 	plane.set(xResolution, yResolution, 4, 4);
 	plane.setPosition(0, 0, 0);
 	plane.mapTexCoords(0, 0, xResolution, yResolution);
-
 
 	gameFont.loadFont("fonts/Glastonbury.ttf", 60, true, true);
 	gameFont.setLineHeight(18.0f);
@@ -76,10 +83,6 @@ void testApp::setup(){
 
 	//==========================
 
-	lHandAdj = ofVec3f(plane.getWidth()*0.5,plane.getHeight()*0.5);
-	rHandAdj = ofVec3f(0,0,0);
-	lWristAdj = lHandAdj;
-	rWristAdj = rHandAdj;
 
 	/*head1 = &ofVec3f(0,0,0);
 	lHand1 = &ofVec3f(0,0,0);
@@ -139,7 +142,7 @@ void testApp::update()
 
 					if (!player1Exists){
 						player1 = new Player();
-						player1->setup(1,i,&kResX);
+						player1->setup(1,i);
 						player1Exists = true;
 						cout << "PLAYER 1 set up at Index: " << i << endl; 
 					}
@@ -147,7 +150,7 @@ void testApp::update()
 					if (!player2Exists && player1Exists){
 						if (i != player1->pIndex){
 							player2 = new Player();
-							player2->setup(2,i,&kResX);
+							player2->setup(2,i);
 							player2Exists = true;
 							cout << "PLAYER 2 set up at Index: " << i << endl; 
 						}
@@ -179,25 +182,6 @@ void testApp::update()
 					lFoot1 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_LEFT)->second.getScreenPosition();
 					rFoot1 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_RIGHT)->second.getScreenPosition();
 
-					/*SkeletonBone headBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second;
-					SkeletonBone lHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_LEFT)->second;
-					SkeletonBone rHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_RIGHT)->second;
-					SkeletonBone lWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_LEFT)->second;
-					SkeletonBone rWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_RIGHT)->second;
-					SkeletonBone lElbowBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_LEFT)->second;
-					SkeletonBone rElbowBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_RIGHT)->second;
-					SkeletonBone lFootBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_LEFT)->second;
-					SkeletonBone rFootBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_RIGHT)->second;
-
-					head1 = headBone.getScreenPosition();
-					lHand1 = lHandBone.getScreenPosition();
-					rHand1 = rHandBone.getScreenPosition();
-					lWrist1 = lWristBone.getScreenPosition();
-					rWrist1 = rWristBone.getScreenPosition();
-					lElbow1 = lElbowBone.getScreenPosition();
-					rElbow1 = rElbowBone.getScreenPosition();
-					lFoot1 = lFootBone.getScreenPosition();
-					rFoot1 = rFootBone.getScreenPosition();*/
 
 					cout << "p1 Left Foot: " << lFoot1 << endl;
 
@@ -233,36 +217,6 @@ void testApp::update()
 					rElbow2 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_RIGHT)->second.getScreenPosition();
 					lFoot2 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_LEFT)->second.getScreenPosition();
 					rFoot2 = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_RIGHT)->second.getScreenPosition();
-
-					/*SkeletonBone headBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HEAD)->second;
-					SkeletonBone lHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_LEFT)->second;
-					SkeletonBone rHandBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_HAND_RIGHT)->second;
-					SkeletonBone lWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_LEFT)->second;
-					SkeletonBone rWristBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_WRIST_RIGHT)->second;
-					SkeletonBone lElbowBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_LEFT)->second;
-					SkeletonBone rElbowBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_ELBOW_RIGHT)->second;
-					SkeletonBone lFootBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_LEFT)->second;
-					SkeletonBone rFootBone = kinect.getSkeletons().at(i).find(NUI_SKELETON_POSITION_FOOT_RIGHT)->second;
-
-					head2 = headBone.getScreenPosition();
-					lHand2 = lHandBone.getScreenPosition();
-					rHand2 = rHandBone.getScreenPosition();
-					lWrist2 = lWristBone.getScreenPosition();
-					rWrist2 = rWristBone.getScreenPosition();
-					lElbow2 = lElbowBone.getScreenPosition();
-					rElbow2 = rElbowBone.getScreenPosition();
-					lFoot2 = lFootBone.getScreenPosition();
-					rFoot2 = rFootBone.getScreenPosition();*/
-
-					/*head2 = getBone(headBone,head2);
-					lHand2 = getBone(lHandBone,lHand2);
-					rHand2 = getBone(rHandBone,rHand2);
-					lWrist2 = getBone(lWristBone,lWrist2);
-					rWrist2 = getBone(rWristBone,rWrist2);
-					lElbow2 = getBone(lElbowBone,lElbow2);
-					rElbow2 = getBone(rElbowBone,rElbow2);
-					lFoot2 = getBone(lFootBone,lFoot2);
-					rFoot2 = getBone(rFootBone,rFoot2);*/
 
 					cout << "p2 Left Foot: " << lFoot2 << endl;
 
@@ -311,8 +265,13 @@ void testApp::draw(){
 		shader.setUniform1f("time", ofGetElapsedTimef());///2.0);
 		shader.setUniform2f("resolution", xResolution, yResolution);
 		shader.setUniform2f("kRes", kResX, kResY);
-		//shader.setUniformTexture("videoTex", kinect.getColorTexture(), 0);
-		shader.setUniformTexture("videoTex", kinect.getDepthTexture(), 0);
+
+		if (depth){
+			shader.setUniformTexture("videoTex", kinect.getDepthTexture(), 0);
+		} else {
+			shader.setUniformTexture("videoTex", kinect.getColorTexture(), 0);
+		}
+
 
 		//if(hasSkeleton)
 		if (player1Exists)
@@ -321,17 +280,18 @@ void testApp::draw(){
 			shader.setUniform3f("p1SpellPoint", 1.0 + (player1->spellPos.x/(-320)), 1.0 + (player1->spellPos.y/(-240)), 0);
 			shader.setUniform3f("p1PrevSpell", 1.0 + (player1->prevSpellPos.x/(-320)), 1.0 + (player1->prevSpellPos.y/(-240)), 0);
 			shader.setUniform1f("p1Intensity", player1->spellIntensity);
-			shader.setUniform1f("p1Health", player1->health/30);
+			shader.setUniform1f("p1Health", player1->health/player1->startHealth);
 
 			if (player1->spellState > 2 && player1->spellState < 5){
-
-				//cout << "Shader Knows Player 1 spell called" << endl;
-				//if (spellType == "flame"){
-
-				//set and pass a number for each spell type
-				shader.setUniform1i("p1SpellType", 1);
-			} else {
-				shader.setUniform1i("p1SpellType", 0);
+				if (player1->spellType == "fire"){
+					//set and pass a number for each spell type
+					shader.setUniform1i("p1SpellType", 1);
+				} else if (player1->spellType == "water"){
+					//set and pass a number for each spell type
+					shader.setUniform1i("p1SpellType", 2);
+				} else {
+					shader.setUniform1i("p1SpellType", 0);
+				}
 			}
 
 			if (player1->spellState == 5){
@@ -342,7 +302,7 @@ void testApp::draw(){
 
 		} else {
 
-			shader.setUniform3f("p1SpellPoint", p3, p3, p3);
+			shader.setUniform3f("p1SpellPoint", ofGetWidth()*0.2, ofGetHeight()*0.5, 0);
 			shader.setUniform1f("p1Intensity", 0.0);
 			shader.setUniform1i("p1SpellType", 0);
 			shader.setUniform1i("p1Impact", 0);
@@ -355,14 +315,18 @@ void testApp::draw(){
 			shader.setUniform3f("p2SpellPoint", 1.0 + (player2->spellPos.x/(-320.0)), 1.0 + (player2->spellPos.y/(-240.0)), 0);
 			shader.setUniform3f("p2PrevSpell", 1.0 + (player2->prevSpellPos.x/(-320.0)), 1.0 + (player2->prevSpellPos.y/(-240.0)), 0);
 			shader.setUniform1f("p2Intensity", player2->spellIntensity);
-			shader.setUniform1f("p2Health", player2->health/30);
+			shader.setUniform1f("p2Health", player2->health/player2->startHealth);
 
 			if (player2->spellState > 2 && player2->spellState < 5){
-				//if (spellType == "flame"){
-				//set and pass a number for each spell type
-				shader.setUniform1i("p2SpellType", 1);
-			} else {
-				shader.setUniform1i("p2SpellType", 0);
+				if (player2->spellType == "fire"){
+					//set and pass a number for each spell type
+					shader.setUniform1i("p2SpellType", 1);
+				} else if (player2->spellType == "water"){
+					//set and pass a number for each spell type
+					shader.setUniform1i("p2SpellType", 2);
+				} else {
+					shader.setUniform1i("p2SpellType", 0);
+				}
 			}
 
 			if (player2->spellState == 5){
@@ -374,7 +338,7 @@ void testApp::draw(){
 
 		} else {
 
-			shader.setUniform3f("p2SpellPoint", p3, p3, p3);
+			shader.setUniform3f("p2SpellPoint", ofGetWidth()*0.8, ofGetHeight()*0.5, 0);
 			shader.setUniform1f("p2Intensity", 0.0);
 			shader.setUniform1i("p2SpellType", 0);
 			shader.setUniform1i("p2Impact", 0);
@@ -398,8 +362,10 @@ void testApp::draw(){
 			ofCircle(player1->spellPos,10);*/
 
 			ofSetColor(255,255,100);
-			ofDrawBitmapString("SKELETON 1 DETECTED", ofGetWidth()*0.25, 32);
-			drawHealthBar(player1, 1);
+			//ofDrawBitmapString("SKELETON 1 DETECTED", ofGetWidth()*0.25, 32);
+			float p1HandPos = (player1->lHand.y + player1->rHand.y)*0.5;
+			ofDrawBitmapString("P1 handPos: " + ofToString(p1HandPos), ofGetWidth()*0.25, 32);
+			//drawHealthBar(player1, 1);
 
 			if (player1->impactCheckCalled){
 				//ofDrawBitmapString("P1 IMPACT CHECK CALLED", ofGetWidth()*0.25, 100);
@@ -417,10 +383,10 @@ void testApp::draw(){
 			ofCircle(player2->spellPos,10);*/
 			//ofLine(player->lHand,player->rHand);
 
-			ofSetColor(255,255,100);
-			ofDrawBitmapString("SKELETON 2 DETECTED", ofGetWidth()*0.75, 32);
+			//ofSetColor(255,255,100);
+			//ofDrawBitmapString("SKELETON 2 DETECTED", ofGetWidth()*0.75, 32);
 
-			drawHealthBar(player2, 2);
+			//drawHealthBar(player2, 2);
 
 			if (player2->impactCheckCalled){
 				//ofDrawBitmapString("P2 IMPACT CHECK CALLED", ofGetWidth()*0.75, 100);
@@ -431,8 +397,8 @@ void testApp::draw(){
 
 		float frameRate = ofGetFrameRate();
 
-		string framerateString = "FrameRate: " + ofToString(frameRate);
-		gameFont.drawString(framerateString, ofGetWidth()*0.5-(gameFont.stringWidth(framerateString)*0.5), 32);
+		//string framerateString = "FrameRate: " + ofToString(frameRate);
+		//gameFont.drawString(framerateString, ofGetWidth()*0.5-(gameFont.stringWidth(framerateString)*0.5), 32);
 
 		//ofDrawBitmapString("FRAMERATE: " + ofToString(frameRate), ofGetWidth()*0.5, 32);
 
@@ -445,7 +411,7 @@ void testApp::draw(){
 
 	} else {
 		ofBackground(0);
-		ofSetColor(255,255,0);
+		ofSetColor(230,240,255);
 
 		string winString = "Victory is Yours!";
 		if (winner == 1){

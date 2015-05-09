@@ -7,12 +7,13 @@ Player::Player(void)
 }
 
 //--------------------------------------------------------------
-void Player::setup(int _playerNum, int _pIndex, float *_kResX){
+void Player::setup(int _playerNum, int _pIndex){
 
 	playerNum = _playerNum;
 	pIndex = _pIndex;
 
 	kResX = 640;
+	kResY = 480;
 	//kResX*=2;
 
 	startVel = 7;
@@ -29,6 +30,18 @@ void Player::setup(int _playerNum, int _pIndex, float *_kResX){
 	fCrackle.setVolume(0.2);
 	fCrackle.setMultiPlay(true);
 	fCrackle.setLoop(true);
+
+	wWhoosh.loadSound("sounds/water_whoosh.wav");
+	wWhoosh.setVolume(0.75);
+	wWhoosh.setMultiPlay(false);
+
+	wRunning.loadSound("sounds/water_running.wav");
+	wRunning.setVolume(0.2);
+	fCrackle.setMultiPlay(true);
+	fCrackle.setLoop(true);
+
+	spellWhoosh = &fWhoosh;
+	spellNoise = &fCrackle;
 
 	spellCalled = false;
 	spellExists = false;
@@ -103,9 +116,17 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 	//==========SPELL CAN BE CALLED==================
 
 	if (spellState == 1){
-		if (rHand.x - lHand.x < 0 && prevRHand.x - prevLHand.x > 0 && abs(rHand.y-lHand.y) < 50) {
+
+		//float DistToFeet = abs((lHand.y + rHand.y)*0.5 - (lFoot.y+rFoot.y)*0.5);
+		float avgHandYPos = (lHand.y + rHand.y)*0.5;
+
+		if (rHand.x - lHand.x < 0 && prevRHand.x - prevLHand.x > 0 && abs(rHand.y-lHand.y) < 80) {
+			spellType = "fire";
 			spellState = 2; 
 
+		} else if (avgHandYPos > kResY*0.8){
+			spellType = "water";
+			spellState = 2;
 		}
 	}
 
@@ -113,11 +134,29 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 
 	if (spellState == 2){
 
-		if (rHand.x - lHand.x > 10) {	
-			fWhoosh.play();
-			fCrackle.play();
-			spellState = 3; //spell exists
-			//cout << "P1 Spell Exists" << endl;
+		if (spellType == "fire"){
+			if (rHand.x - lHand.x > 10) {
+
+				spellWhoosh = &fWhoosh;
+				spellNoise = &fCrackle;
+				//fWhoosh.play();
+				//fCrackle.play();
+				//spellState = 3; 
+
+				callSpell();
+				//spell exists
+				//cout << "P1 Spell Exists" << endl;
+			}
+		} else if (spellType == "water"){
+			if ((lHand.y + rHand.y)*0.5 < kResY*0.75) {	
+				spellWhoosh = &wWhoosh;
+				spellNoise = &wRunning;
+				callSpell();
+				//wWhoosh.play();
+				//wRunning.play();
+				//spellState = 3; //spell exists
+				//cout << "P1 Spell Exists" << endl;
+			}
 		}
 	}
 
@@ -216,15 +255,18 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 
 	spellPan = ofMap(spellPos.x,0,kResX,-1.0,1.0);
 
-	if (fCrackle.getIsPlaying()){
-		fCrackle.setVolume(ofMap(spellIntensity,0.0,1.0,0.1,1.0));
-		fCrackle.setSpeed(ofMap(spellIntensity,0.0,1.0,0.5,1.5));
-		fCrackle.setPan(spellPan);
-	}
+	//if (spellState > 1){
 
-	if (fWhoosh.getIsPlaying()){
-		fWhoosh.setPan(spellPan);
-	}
+		if (spellNoise->getIsPlaying()){
+			spellNoise->setVolume(ofMap(spellIntensity,0.0,1.0,0.1,1.0));
+			spellNoise->setSpeed(ofMap(spellIntensity,0.0,1.0,0.5,1.5));
+			spellNoise->setPan(spellPan);
+		}
+
+		if (spellWhoosh->getIsPlaying()){
+			spellWhoosh->setPan(spellPan);
+		}
+	//}
 
 	hasSkeleton = true;
 
@@ -265,9 +307,19 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 	}
 
 	//if (spellState > 2){
-		prevSpellPos = spellPrevs[0];
+	prevSpellPos = spellPrevs[0];
 	//}
 
+}
+
+//--------------------------------------------------------------
+
+void Player::callSpell(){
+	spellWhoosh->play();
+	spellNoise->play();
+
+	spellState = 3;
+	//impactCheckCalled = false;
 }
 
 //--------------------------------------------------------------
@@ -275,11 +327,11 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 
 void Player::fireSpell(){
 	vel = startVel;
-	fCrackle.stop();
-	fWhoosh.setVolume(ofMap(spellIntensity,0.0,1.0,0.5,1.5));
-	fWhoosh.setSpeed(ofMap(spellIntensity,0.0,1.0,1.5,0.9));
-	fWhoosh.setPan(spellPan);
-	fWhoosh.play();
+	spellNoise->stop();
+	spellWhoosh->setVolume(ofMap(spellIntensity,0.0,1.0,0.5,1.5));
+	spellWhoosh->setSpeed(ofMap(spellIntensity,0.0,1.0,1.5,0.9));
+	spellWhoosh->setPan(spellPan);
+	spellWhoosh->play();
 	spellState = 4;
 
 	cout << "fireSpell completed" << endl;

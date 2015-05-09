@@ -32,6 +32,8 @@ class testApp : public ofBaseApp{
 		ofShader shader;
 		ofPlanePrimitive plane;
 
+		bool depth;
+
 		Player * player1;
 		Player * player2;
 		bool player1Exists, player2Exists;
@@ -41,6 +43,7 @@ class testApp : public ofBaseApp{
 		int winner;
 
 		ofTrueTypeFont gameFont;
+		ofImage startPose;
 
 		float xResolution, yResolution, kResX, kResY;
 
@@ -49,12 +52,7 @@ class testApp : public ofBaseApp{
 		bool hasSkeleton;
 
 		float jointDistance;
-		ofxPanel gui;
-
-		ofxFloatSlider p1, p2, p3, p4, p5, p6;
-
-		ofVec3f lHandAdj, rHandAdj, lWristAdj, rWristAdj;
-		ofVec3f spellPos;
+		
 
 		//spell creation logic
 		bool spellFired;
