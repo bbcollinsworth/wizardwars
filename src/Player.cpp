@@ -35,13 +35,15 @@ void Player::setup(int _playerNum, int _pIndex){
 	wWhoosh.setVolume(0.75);
 	wWhoosh.setMultiPlay(false);
 
-	wRunning.loadSound("sounds/water_running.wav");
-	wRunning.setVolume(0.2);
-	fCrackle.setMultiPlay(true);
-	fCrackle.setLoop(true);
+	wRunning.loadSound("sounds/water_flowing.wav");
+	wRunning.setVolume(0.3);
+	wRunning.setMultiPlay(true);
+	wRunning.setLoop(true);
 
 	spellWhoosh = &fWhoosh;
 	spellNoise = &fCrackle;
+
+	//spellNoise->setLoop(true);
 
 	spellCalled = false;
 	spellExists = false;
@@ -124,7 +126,7 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 			spellType = "fire";
 			spellState = 2; 
 
-		} else if (avgHandYPos > kResY*0.8){
+		} else if (avgHandYPos > 300){
 			spellType = "water";
 			spellState = 2;
 		}
@@ -148,7 +150,7 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 				//cout << "P1 Spell Exists" << endl;
 			}
 		} else if (spellType == "water"){
-			if ((lHand.y + rHand.y)*0.5 < kResY*0.75) {	
+			if ((lHand.y + rHand.y)*0.5 < 270) {	
 				spellWhoosh = &wWhoosh;
 				spellNoise = &wRunning;
 				callSpell();
@@ -180,14 +182,14 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 		spellIntensity = ofMap(motionEnergy,0,6000,0.0,1.0,true);
 
 
-		if (prevLBehindHeadMax < -10 && prevRBehindHeadMax < -10){
+		if (prevLBehindHeadMax < -20 && prevRBehindHeadMax < -20){
 			if (playerNum == 1){
-				if (lHand.x - head.x > abs((lHand.y - head.y)*0.5) && rHand.x - head.x > abs((rHand.y - head.y)*0.5)) { 
+				if (lHand.x - head.x > abs((lHand.y - head.y)*0.1) && rHand.x - head.x > abs((rHand.y - head.y)*0.1)) { 
 
 					fireSpell();
 				}
 			} else if (playerNum == 2){
-				if (head.x - lHand.x > abs((lHand.y - head.y)*0.5) && head.x - rHand.x > abs((rHand.y - head.y)*0.5)) { 
+				if (head.x - lHand.x > abs((lHand.y - head.y)*0.1) && head.x - rHand.x > abs((rHand.y - head.y)*0.1)) { 
 
 					fireSpell();
 				}
@@ -239,11 +241,11 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 		spellPos = spellPos;
 		if (impactCounter < PI){
 			float frameDivisor = floor(ofGetFrameRate());
-			float impactLength = ofMap(spellIntensity,0,1,frameDivisor,frameDivisor*2);
+			float impactLength = ofMap(spellIntensity,0,1,frameDivisor*0.5,frameDivisor*1.5);
 			impactCounter += PI/impactLength;//ofGetFrameRate();
 			//cout << "Impact counter: " << impactCounter << endl;
 			impactSize = sin(impactCounter);
-			impactSize = ofMap(impactSize,0,1,10,0.5-spellIntensity);//powerAtImpact);
+			impactSize = ofMap(impactSize,0,1,10.0,1.0-(spellIntensity*1.5));//powerAtImpact);
 			cout << "Impact size: " << impactSize << endl;
 
 		} else {
@@ -258,9 +260,16 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 	//if (spellState > 1){
 
 		if (spellNoise->getIsPlaying()){
-			spellNoise->setVolume(ofMap(spellIntensity,0.0,1.0,0.1,1.0));
-			spellNoise->setSpeed(ofMap(spellIntensity,0.0,1.0,0.5,1.5));
 			spellNoise->setPan(spellPan);
+
+			if (spellType == "fire"){
+				spellNoise->setSpeed(ofMap(spellIntensity,0.0,1.0,0.5,1.5));
+				spellNoise->setVolume(ofMap(spellIntensity,0.0,1.0,0.1,1.0));
+			} else if (spellType == "water"){
+				spellNoise->setSpeed(ofMap(powf(spellIntensity,4.0f),0.0,1.0,1.0,0.6));
+				spellNoise->setVolume(ofMap(spellIntensity,0.0,1.0,0.2,1.5));
+			}
+			
 		}
 
 		if (spellWhoosh->getIsPlaying()){
@@ -348,8 +357,8 @@ void Player::clearSpell(){
 //--------------------------------------------------------------
 
 void Player::playBoom(){
-	boom.setVolume(ofMap(spellIntensity,0.0,1.0,0.5,3.0));
-	boom.setSpeed(ofMap(spellIntensity,0.0,1.0,2.0,1.2));
+	boom.setVolume(ofMap(spellIntensity,0.0,1.0,0.3,3.0));
+	boom.setSpeed(ofMap(spellIntensity,0.0,1.0,3.5,1.0));
 	boom.setPan(spellPan);
 	boom.play();
 }

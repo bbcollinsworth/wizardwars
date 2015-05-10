@@ -13,7 +13,8 @@ class testApp : public ofBaseApp{
 		void update();
 		void draw();
 		void setSpellPosition(ofVec3f *pos);
-		ofVec3f getBone(SkeletonBone bone, ofVec3f bodyPart);
+		void spellsCollideCheck();
+		void spellsCollide();
 		void impactCheck(int _pNum);
 		void drawHealthBar(Player* p, int _pNum);
 		void gameOverCheck();
@@ -45,6 +46,8 @@ class testApp : public ofBaseApp{
 		ofTrueTypeFont gameFont;
 		ofImage startPose;
 
+		ofSoundPlayer collideSound;
+
 		float xResolution, yResolution, kResX, kResY;
 
 		ofVec3f head1, lHand1, rHand1, lWrist1, rWrist1, lElbow1, rElbow1, lFoot1, rFoot1;
@@ -63,11 +66,6 @@ class testApp : public ofBaseApp{
 		float spellIntensity;
 
 		bool firstPress;
-
-		//vector <Flame *> flames;
-
-		//vector <float *> motion;
-		//vector <float> motion;
 
 		bool playSound;
 

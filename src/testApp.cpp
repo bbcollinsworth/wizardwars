@@ -64,6 +64,8 @@ void testApp::setup(){
 	gameFont.loadFont("fonts/Glastonbury.ttf", 60, true, true);
 	gameFont.setLineHeight(18.0f);
 
+	collideSound.loadSound("sounds/hiss.wav");
+
 	//==========================
 	//BOOLEAN INITIALIZATIONS
 	//==========================
@@ -231,6 +233,11 @@ void testApp::update()
 		}
 	}
 
+	if (collideSound.getIsPlaying()){
+		float collideVol = collideSound.getVolume();
+		collideSound.setVolume(collideVol*0.95);
+	}
+
 	ofSoundUpdate();
 
 
@@ -241,6 +248,10 @@ void testApp::draw(){
 
 	if (player1Exists && player2Exists){
 		gameOverCheck();
+
+		if (!gameOver){
+			spellsCollideCheck();
+		}
 	}
 
 	if (!gameOver){
@@ -289,9 +300,10 @@ void testApp::draw(){
 				} else if (player1->spellType == "water"){
 					//set and pass a number for each spell type
 					shader.setUniform1i("p1SpellType", 2);
-				} else {
-					shader.setUniform1i("p1SpellType", 0);
 				}
+			} else {
+				shader.setUniform1i("p1SpellType", 0);
+
 			}
 
 			if (player1->spellState == 5){
@@ -324,10 +336,11 @@ void testApp::draw(){
 				} else if (player2->spellType == "water"){
 					//set and pass a number for each spell type
 					shader.setUniform1i("p2SpellType", 2);
-				} else {
-					shader.setUniform1i("p2SpellType", 0);
-				}
+				} 
+			} else {
+				shader.setUniform1i("p2SpellType", 0);
 			}
+
 
 			if (player2->spellState == 5){
 				shader.setUniform1f("p2Impact", player2->impactSize);
@@ -386,6 +399,9 @@ void testApp::draw(){
 			//ofSetColor(255,255,100);
 			//ofDrawBitmapString("SKELETON 2 DETECTED", ofGetWidth()*0.75, 32);
 
+			float p2HandPos = (player2->lHand.y + player2->rHand.y)*0.5;
+			ofDrawBitmapString("P2 handPos: " + ofToString(p2HandPos), ofGetWidth()*0.75, 32);
+
 			//drawHealthBar(player2, 2);
 
 			if (player2->impactCheckCalled){
@@ -427,34 +443,6 @@ void testApp::draw(){
 	}
 }
 
-//--------------------------------------------------------------
-
-ofVec3f testApp::getBone(SkeletonBone bone, ofVec3f bodyPart){
-	ofVec3f tempBone( bone.getScreenPosition().x, bone.getScreenPosition().y, 0);
-	//cout << bodyPart << endl;
-	//cout << tempBone.x << ", " << tempBone.y << endl;
-	//ofVec3f tempBodyPart = *bodyPart;
-	bodyPart = bodyPart.getInterpolated(tempBone, 0.5);
-	return bodyPart;
-}
-
-//--------------------------------------------------------------
-
-void testApp::drawHealthBar(Player* p, int _pNum){
-	int scale = 4;
-
-	float healthBarX = p->startHealth*-0.5;
-	healthBarX*= scale;
-	if (_pNum == 1){
-		healthBarX += ofGetWidth()*0.25;
-	} else if (_pNum == 2){
-		healthBarX += ofGetWidth()*0.75;
-	}
-
-	float healthBarW = (p->health)*scale;
-
-	ofRect(healthBarX,70,healthBarW,20);
-}
 
 //--------------------------------------------------------------
 
@@ -469,6 +457,60 @@ void testApp::gameOverCheck(){
 	}
 }
 
+
+//--------------------------------------------------------------
+
+void testApp::spellsCollideCheck(){
+
+	//cout << "Checking for impact" << endl;
+
+	if (player1->spellState > 2 && player1->spellState < 5 && player2->spellState > 2 && player2->spellState < 5){
+
+		if (player1->spellType != player2->spellType){
+
+			float spellDistX = abs(player1->spellPos.x - player2->spellPos.x);
+
+			if (spellDistX < 30){
+				if (player1->spellType == "water" && player2->spellPos.y > player1->spellPos.y){
+					spellsCollide();
+				} else if (player2->spellType == "water" && player1->spellPos.y > player2->spellPos.y){
+					spellsCollide();
+				}
+			}
+		}
+	}
+
+
+}
+
+//--------------------------------------------------------------
+
+void testApp::spellsCollide(){
+
+	collideSound.play();
+	collideSound.setVolume(1.5f);
+	float collidePan = (player1->spellPan+player2->spellPan)*0.5;
+	collideSound.setPan(collidePan);
+
+	float p1i = player1->spellIntensity;
+	float p2i = player2->spellIntensity;
+
+	if (p1i > p2i)
+	{
+		player1->spellIntensity -= p2i;
+		player2->spellState = 0;
+	} 
+	else if (p1i < p2i)
+	{
+		player2->spellIntensity -= p1i;
+		player1->spellState = 0;
+	} 
+	else if (p1i == p2i)
+	{
+		player1->spellState = 0;
+		player2->spellState = 0;
+	}
+}
 
 //--------------------------------------------------------------
 
@@ -520,6 +562,24 @@ void testApp::impactCheck(int _pNum){
 		}
 	}
 
+}
+
+//--------------------------------------------------------------
+
+void testApp::drawHealthBar(Player* p, int _pNum){
+	int scale = 4;
+
+	float healthBarX = p->startHealth*-0.5;
+	healthBarX*= scale;
+	if (_pNum == 1){
+		healthBarX += ofGetWidth()*0.25;
+	} else if (_pNum == 2){
+		healthBarX += ofGetWidth()*0.75;
+	}
+
+	float healthBarW = (p->health)*scale;
+
+	ofRect(healthBarX,70,healthBarW,20);
 }
 
 //--------------------------------------------------------------
