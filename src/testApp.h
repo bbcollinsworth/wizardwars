@@ -18,6 +18,7 @@ class testApp : public ofBaseApp{
 		void impactCheck(int _pNum);
 		void drawHealthBar(Player* p, int _pNum);
 		void gameOverCheck();
+		float collideUniformSet();
 		
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -42,6 +43,11 @@ class testApp : public ofBaseApp{
 
 		bool gameStarted, gameOver;
 		int winner;
+
+		bool playOutCollide;
+		float collideCounter;
+		float collideIntensity;
+		ofVec3f collidePos;
 
 		ofTrueTypeFont gameFont;
 		ofImage startPose;

@@ -32,7 +32,7 @@ void Player::setup(int _playerNum, int _pIndex){
 	fCrackle.setLoop(true);
 
 	wWhoosh.loadSound("sounds/water_whoosh.wav");
-	wWhoosh.setVolume(0.75);
+	wWhoosh.setVolume(1.5);
 	wWhoosh.setMultiPlay(false);
 
 	wRunning.loadSound("sounds/water_flowing.wav");
@@ -266,8 +266,8 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 				spellNoise->setSpeed(ofMap(spellIntensity,0.0,1.0,0.5,1.5));
 				spellNoise->setVolume(ofMap(spellIntensity,0.0,1.0,0.1,1.0));
 			} else if (spellType == "water"){
-				spellNoise->setSpeed(ofMap(powf(spellIntensity,4.0f),0.0,1.0,1.0,0.6));
-				spellNoise->setVolume(ofMap(spellIntensity,0.0,1.0,0.2,1.5));
+				spellNoise->setSpeed(ofMap(powf(spellIntensity,4.0f),0.0,1.0,1.0,0.8));
+				spellNoise->setVolume(ofMap(spellIntensity,0.0,1.0,0.2,2.5));
 			}
 			
 		}
@@ -357,8 +357,9 @@ void Player::clearSpell(){
 //--------------------------------------------------------------
 
 void Player::playBoom(){
-	boom.setVolume(ofMap(spellIntensity,0.0,1.0,0.3,3.0));
-	boom.setSpeed(ofMap(spellIntensity,0.0,1.0,3.5,1.0));
+	//boom.play();
+	boom.setVolume(ofMap(spellIntensity*spellIntensity,0.0,1.0,0.1,3.0));
+	boom.setSpeed(ofMap(spellIntensity,0.0,1.0,4.0,1.0));
 	boom.setPan(spellPan);
 	boom.play();
 }

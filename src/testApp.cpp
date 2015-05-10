@@ -82,6 +82,10 @@ void testApp::setup(){
 	p1Updated = false;
 	p2Updated = false;
 
+	playOutCollide = false;
+
+	collidePos = ofVec3f(kResX*0.5,kResY*0.5);
+
 
 	//==========================
 
@@ -251,6 +255,7 @@ void testApp::draw(){
 
 		if (!gameOver){
 			spellsCollideCheck();
+
 		}
 	}
 
@@ -276,6 +281,9 @@ void testApp::draw(){
 		shader.setUniform1f("time", ofGetElapsedTimef());///2.0);
 		shader.setUniform2f("resolution", xResolution, yResolution);
 		shader.setUniform2f("kRes", kResX, kResY);
+		shader.setUniform1f("collide", collideUniformSet());
+		shader.setUniform3f("collidePoint", collidePos.x/(-320),collidePos.y/(-240),0);
+		shader.setUniform1f("flicker",ofRandomuf());
 
 		if (depth){
 			shader.setUniformTexture("videoTex", kinect.getDepthTexture(), 0);
@@ -317,7 +325,7 @@ void testApp::draw(){
 			shader.setUniform3f("p1SpellPoint", ofGetWidth()*0.2, ofGetHeight()*0.5, 0);
 			shader.setUniform1f("p1Intensity", 0.0);
 			shader.setUniform1i("p1SpellType", 0);
-			shader.setUniform1i("p1Impact", 0);
+			shader.setUniform1f("p1Impact", 0);
 			shader.setUniform1f("p1Health", 0);
 		}
 
@@ -354,8 +362,9 @@ void testApp::draw(){
 			shader.setUniform3f("p2SpellPoint", ofGetWidth()*0.8, ofGetHeight()*0.5, 0);
 			shader.setUniform1f("p2Intensity", 0.0);
 			shader.setUniform1i("p2SpellType", 0);
-			shader.setUniform1i("p2Impact", 0);
+			shader.setUniform1f("p2Impact", 0);
 			shader.setUniform1f("p2Health", 0);
+			//shader.setUniform1f("flicker",ofRandomuf());
 		}
 
 		plane.draw();
@@ -377,7 +386,7 @@ void testApp::draw(){
 			ofSetColor(255,255,100);
 			//ofDrawBitmapString("SKELETON 1 DETECTED", ofGetWidth()*0.25, 32);
 			float p1HandPos = (player1->lHand.y + player1->rHand.y)*0.5;
-			ofDrawBitmapString("P1 handPos: " + ofToString(p1HandPos), ofGetWidth()*0.25, 32);
+			//ofDrawBitmapString("P1 handPos: " + ofToString(p1HandPos), ofGetWidth()*0.25, 32);
 			//drawHealthBar(player1, 1);
 
 			if (player1->impactCheckCalled){
@@ -400,7 +409,7 @@ void testApp::draw(){
 			//ofDrawBitmapString("SKELETON 2 DETECTED", ofGetWidth()*0.75, 32);
 
 			float p2HandPos = (player2->lHand.y + player2->rHand.y)*0.5;
-			ofDrawBitmapString("P2 handPos: " + ofToString(p2HandPos), ofGetWidth()*0.75, 32);
+			//ofDrawBitmapString("P2 handPos: " + ofToString(p2HandPos), ofGetWidth()*0.75, 32);
 
 			//drawHealthBar(player2, 2);
 
@@ -495,20 +504,52 @@ void testApp::spellsCollide(){
 	float p1i = player1->spellIntensity;
 	float p2i = player2->spellIntensity;
 
+	float steamIntensity;
+
 	if (p1i > p2i)
 	{
+		steamIntensity = p2i;
+		collidePos = player2->spellPos;
 		player1->spellIntensity -= p2i;
 		player2->spellState = 0;
 	} 
 	else if (p1i < p2i)
 	{
+		steamIntensity = p1i;
+		collidePos = player1->spellPos;
 		player2->spellIntensity -= p1i;
 		player1->spellState = 0;
 	} 
 	else if (p1i == p2i)
 	{
+		steamIntensity = p1i;
+		collidePos = player1->spellPos;
 		player1->spellState = 0;
 		player2->spellState = 0;
+	}
+
+	collideIntensity = steamIntensity;
+	playOutCollide = true;
+}
+
+//-------------------------------------------------------------
+
+float testApp::collideUniformSet(){
+	if (playOutCollide && collideCounter < PI){
+		float frameDivisor = floor(ofGetFrameRate());
+		float collideLength = 96.0;
+		//float impactLength = ofMap(spellIntensity,0,1,frameDivisor*0.5,frameDivisor*1.5);
+		collideCounter += PI/collideLength;//ofGetFrameRate();
+		//cout << "Impact counter: " << impactCounter << endl;
+		float collideSize = sin(collideCounter)*collideIntensity;
+		//collideSize = ofMap(collideSize,0,1,10.0,1.0-(spellIntensity*1.5));//powerAtImpact);
+//		cout << "Impact size: " << impactSize << endl;
+		return collideSize;
+
+	} else {
+		playOutCollide = false;
+		collideCounter = 0;
+		return 0.0;
 	}
 }
 
