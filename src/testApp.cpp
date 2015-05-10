@@ -282,7 +282,7 @@ void testApp::draw(){
 		shader.setUniform2f("resolution", xResolution, yResolution);
 		shader.setUniform2f("kRes", kResX, kResY);
 		shader.setUniform1f("collide", collideUniformSet());
-		shader.setUniform3f("collidePoint", collidePos.x/(-320),collidePos.y/(-240),0);
+		shader.setUniform3f("collidePoint", 1.0 + collidePos.x/-320,1.0 + collidePos.y/-240,0);
 		shader.setUniform1f("flicker",ofRandomuf());
 
 		if (depth){
