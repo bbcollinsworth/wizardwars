@@ -64,7 +64,7 @@ void testApp::setup(){
 	gameFont.loadFont("fonts/Glastonbury.ttf", 60, true, true);
 	gameFont.setLineHeight(18.0f);
 
-	collideSound.loadSound("sounds/hiss.wav");
+	collideSound.loadSound("sounds/steam_hiss.wav");
 
 	//==========================
 	//BOOLEAN INITIALIZATIONS
@@ -498,6 +498,7 @@ void testApp::spellsCollide(){
 
 	collideSound.play();
 	collideSound.setVolume(1.5f);
+	collideSound.setSpeed(1.2f);
 	float collidePan = (player1->spellPan+player2->spellPan)*0.5;
 	collideSound.setPan(collidePan);
 
