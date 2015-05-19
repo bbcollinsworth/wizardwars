@@ -126,7 +126,7 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 			spellType = "fire";
 			spellState = 2; 
 
-		} else if (avgHandYPos > 300){
+		} else if (avgHandYPos > 280){
 			spellType = "water";
 			spellState = 2;
 		}
@@ -150,7 +150,7 @@ void Player::updateSkeleton(ofVec3f *_head, ofVec3f *_lHand, ofVec3f *_rHand, of
 				//cout << "P1 Spell Exists" << endl;
 			}
 		} else if (spellType == "water"){
-			if ((lHand.y + rHand.y)*0.5 < 270) {	
+			if ((lHand.y + rHand.y)*0.5 < 260) {	
 				spellWhoosh = &wWhoosh;
 				spellNoise = &wRunning;
 				callSpell();

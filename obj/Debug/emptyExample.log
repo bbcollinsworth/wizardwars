@@ -1,4 +1,4 @@
-﻿Build started 5/10/2015 4:33:04 PM.
+﻿Build started 5/16/2015 4:30:54 PM.
      1>Project "C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\ms2Final_PlayerClasses\emptyExample.vcxproj" on node 2 (Build target(s)).
      1>Project "C:\Users\bcoll_000\Desktop\oFVisualStudio\addons\ofxKinectCommonBridge\ms2Final_PlayerClasses\emptyExample.vcxproj" (1) is building "C:\Users\bcoll_000\Desktop\oFVisualStudio\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj" (2) on node 2 (GetTargetPath target(s)).
        Project file contains ToolsVersion="12.0". This toolset may be unknown or missing, in which case you may be able to resolve this by installing the appropriate version of MSBuild, or the build may have been forced to a particular ToolsVersion for policy reasons. Treating the project as if it had ToolsVersion="4.0". For more information, please see http://go.microsoft.com/fwlink/?LinkId=291333.
@@ -38,4 +38,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.31
+Time Elapsed 00:00:00.83
