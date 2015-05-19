@@ -44,8 +44,12 @@ void testApp::setup(){
 	//ofToggleFullscreen();
 
 #ifdef USE_PROGRAMMABLE_RENDERER
-	//shader.load("shaders/blobs.vs", "shaders/blobs.fs");
-	shader.load("shaders/blobs.vs", "shaders/frag_with_water.fs");
+	
+	//====IMPORTANT!!!========//
+	//CHANGE this to the following to load final shader saved on GitHub:
+	//shader.load("shaders/blobs.vs", "shaders/frag_with_water.fs");
+
+	shader.load("shaders/blobs.vs", "shaders/blobs_with_fire.fs");
 	cout << "Shader in use is not gl2" << endl;
 #else
 	shader.load("shaders/blobs_gl2.vs", "shaders/blobs_gl2.fs");
